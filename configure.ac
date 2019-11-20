@@ -75,6 +75,7 @@ AC_CONFIG_FILES([3rdparty/libprocess/include/Makefile])
 AC_CONFIG_FILES([3rdparty/stout/Makefile])
 AC_CONFIG_FILES([3rdparty/stout/include/Makefile])
 AC_CONFIG_FILES([3rdparty/gmock_sources.cc])
+AC_CONFIG_FILES([src/testManifest.json], [])
 
 AC_CONFIG_FILES(
   [bin/mesos.sh],

@@ -60,6 +60,8 @@ pkgsysconfdir = $(sysconfdir)/$(PACKAGE)
 # Directories to optionally install test binaries and libraries.
 testlibexecdir = $(pkglibexecdir)/tests
 
+#pkglib_LTLIBRARIES =
+
 # Directory where Mesos modules are installed.
 pkgmoduledir = $(pkglibdir)/modules
 relative_pkgmoduledir = $(PACKAGE)/modules
@@ -2557,8 +2559,13 @@ libtesthttpauthenticator_la_LDFLAGS = $(MESOS_TEST_MODULE_LDFLAGS)
 
 # Library containing the test DRF allocator module.
 libtestallocator_la_SOURCES = examples/test_allocator_module.cpp
-libtestallocator_la_CPPFLAGS = $(MESOS_CPPFLAGS)
+libtestallocator_la_CPPFLAGS = $(MESOS_CPPFLAGS) #Må bare .cpp fil
 libtestallocator_la_LDFLAGS = $(MESOS_TEST_MODULE_LDFLAGS)
+
+#Library containing my dummy allocator
+dummyallocator_la_SOURCES = /home/hanshenriksande/Master/mesos/include/mesos/module/dummymodule.cpp
+dummyallocator_la_CPPFLAGS = $(MESOS_CPPFLAGS)
+dummyallocator_la_LDFLAGS = $(MESOS_MODULE_LDFLAGS)
 
 # Library containing example test sandbox container logger module.
 libtestcontainer_logger_la_SOURCES =		\

@@ -1,0 +1,13 @@
+{
+    "libraries": [
+      {
+        "file": "/home/hanshenriksande/Master/mesos/build/src/.libs/libtestallocator.so",
+        "modules": [
+          {
+            "name": "org_apache_mesos_TestDRFAllocator"
+          }
+          
+        ]
+      }
+    ]
+  }

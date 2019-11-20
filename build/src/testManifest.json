@@ -1,0 +1,13 @@
+{
+    "libraries": [
+      {
+        "file": "/home/hanshenriksande/Master/mesos/build/src/examples/.libs/libtestallocator.la",
+        "modules": [
+          {
+            "name": "test_allocator_module"
+          }
+          
+        ]
+      }
+    ]
+  }

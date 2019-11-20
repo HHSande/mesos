@@ -1149,7 +1149,7 @@ void HierarchicalAllocatorProcess::updateAllocation(
   string role = allocations.begin()->first;
 
   Sorter* frameworkSorter = CHECK_NOTNONE(getFrameworkSorter(role));
-
+  
   const Resources frameworkAllocation =
     frameworkSorter->allocation(frameworkId.value(), slaveId);
 

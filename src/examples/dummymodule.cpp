@@ -1,16 +1,24 @@
+#include <mesos/mesos.hpp>
+#include <mesos/module.hpp>
+
 #include <mesos/allocator/allocator.hpp>
+
 #include <mesos/module/allocator.hpp>
+
 #include <stout/try.hpp>
+
+#include "master/constants.hpp"
 
 #include "master/allocator/mesos/dummy.hpp"
 
+#include "master/allocator/mesos/sorter/random/sorter.hpp"
 using namespace mesos;
 using mesos::allocator::Allocator;
-using mesos::internal::master::allocator::HierarchicalDRFAllocator;
+using mesos::internal::master::allocator::DummyAllocator;
 
-static Allocator* createExternalAllocator(const Parameters& parameters)
+static Allocator* createDummyMesosAllocator(const Parameters& parameters)
 {
-  Try<Allocator*> allocator = DummyMesosAllocator::create();
+  Try<Allocator*> allocator = DummyAllocator::create();
   if (allocator.isError()) {
     return nullptr;
   }
@@ -19,12 +27,11 @@ static Allocator* createExternalAllocator(const Parameters& parameters)
 }
 
 // Declares an ExternalAllocator module named 'ExternalAllocatorModule'.
-mesos::modules::Module<Allocator> ExternalAllocatorModule(
+mesos::modules::Module<Allocator> DummyMesosAllocator(
     MESOS_MODULE_API_VERSION,
     MESOS_VERSION,
     "Hans Henrik Sande",
     "engineer@example.com",
-    "External Allocator module.",
+    "Dummy Mesos Allcaotr.",
     nullptr,
-    createExternalAllocator);
-}
+    createDummyMesosAllocator);

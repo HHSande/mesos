@@ -1,3 +1,8 @@
+//
+// Dummy Allocator
+//
+
+
 #include "master/allocator/mesos/dummy.hpp"
 
 #include <algorithm>
@@ -50,7 +55,19 @@ using process::Owned;
 using process::PID;
 using process::Timeout;
 
-void DummyMesosAllocatorProcess::initialize(
+
+namespace mesos {
+
+// Needed to prevent shadowing of template '::operator-<std::set<T>>'
+// by non-template '::mesos::operator-'
+using ::operator-;
+
+namespace internal {
+namespace master {
+namespace allocator {
+namespace internal {
+
+void DummyAllocatorProcess::initialize(
     const Options& _options,
     const lambda::function<
         void(const FrameworkID&,
@@ -61,20 +78,19 @@ void DummyMesosAllocatorProcess::initialize(
              const hashmap<SlaveID, UnavailableResources>&)>&
       _inverseOfferCallback)
 {
-  
-  VLOG(1) << "Initialized dummy allocator process";
+ 
+  LOG(INFO) << "Dummy Allocator Process initialized";
 }
 
 
-void DummyMesosAllocatorProcess::recover(
+void DummyAllocatorProcess::recover(
     const int _expectedAgentCount,
     const hashmap<string, Quota>& quotas)
 {
-  LOG(INFO) << "Triggered dummy allocator recovery "
-           
+  LOG(INFO) << "Dummy recover()";
+}
 
-
-void DummyMesosAllocatorProcess::addFramework(
+void DummyAllocatorProcess::addFramework(
     const FrameworkID& frameworkId,
     const FrameworkInfo& frameworkInfo,
     const hashmap<SlaveID, Resources>& used,
@@ -82,44 +98,46 @@ void DummyMesosAllocatorProcess::addFramework(
     const set<string>& suppressedRoles)
 {
  
+  LOG(INFO) << "Added framework " << frameworkId;
+}
 
-  LOG(INFO) << "Added dummy framework " << frameworkId;
+
+void DummyAllocatorProcess::removeFramework(
+    const FrameworkID& frameworkId)
+{
  
+  LOG(INFO) << "Removed framework " << frameworkId;
 }
 
 
-void DummyMesosAllocatorProcess::removeFramework(
+void DummyAllocatorProcess::activateFramework(
     const FrameworkID& frameworkId)
 {
-  LOG(INFO) << "Removed dummy framework " << frameworkId;
+  
+  LOG(INFO) << "Activated framework " << frameworkId;
+
 }
 
 
-void DummyMesosAllocatorProcess::activateFramework(
+void DummyAllocatorProcess::deactivateFramework(
     const FrameworkID& frameworkId)
 {
-  LOG(INFO) << "Activated dummy framework " << frameworkId;
+ 
+  LOG(INFO) << "Deactivated framework " << frameworkId;
 }
 
 
-void DummyMesosAllocatorProcess::deactivateFramework(
-    const FrameworkID& frameworkId)
-{
-
-  LOG(INFO) << "Deactivated dummy framework " << frameworkId;
-}
-
-
-void DummyMesosAllocatorProcess::updateFramework(
+void DummyAllocatorProcess::updateFramework(
     const FrameworkID& frameworkId,
     const FrameworkInfo& frameworkInfo,
     const set<string>& suppressedRoles)
 {
-    LOG(INFO) << "Updated dummy framework " << frameworkId;
+  LOG(INFO) << "Updateed framework " << frameworkId;
+ 
 }
 
 
-void DummyMesosAllocatorProcess::addSlave(
+void DummyAllocatorProcess::addSlave(
     const SlaveID& slaveId,
     const SlaveInfo& slaveInfo,
     const vector<SlaveInfo::Capability>& capabilities,
@@ -127,223 +145,187 @@ void DummyMesosAllocatorProcess::addSlave(
     const Resources& total,
     const hashmap<FrameworkID, Resources>& used)
 {
-  
-  LOG(INFO)
-    << "Added dummy agent " << slaveId;
+    LOG(INFO) << "Added agent " << slaveId;
+
 }
 
-
-void DummyMesosAllocatorProcess::removeSlave(
+void DummyAllocatorProcess::removeSlave(
     const SlaveID& slaveId)
 {
-  LOG(INFO) << "Removed dummy agent " << slaveId;
+  
+  LOG(INFO) << "Removed agent " << slaveId;
 }
 
 
-void DummyMesosAllocatorProcess::updateSlave(
+void DummyAllocatorProcess::updateSlave(
     const SlaveID& slaveId,
     const SlaveInfo& info,
     const Option<Resources>& total,
     const Option<vector<SlaveInfo::Capability>>& capabilities)
 {
-    LOG(INFO) << "Updated dummy slave " << slaveId;
+  LOG(INFO) << "Updated agent " << slaveId;
+  
 }
 
 
-void DummyMesosAllocatorProcess::addResourceProvider(
+void DummyAllocatorProcess::addResourceProvider(
     const SlaveID& slaveId,
     const Resources& total,
     const hashmap<FrameworkID, Resources>& used)
 {
-  
-  VLOG(1)
-    << "Grew dummy agent " << slaveId << " by "
-    << total << " (total), "
-    << used << " (used)";
+  LOG(INFO) << "Added resource provider for the agent " << slaveId;
+ 
 }
 
-
-void DummyMesosAllocatorProcess::removeFilters(const SlaveID& slaveId)
-{
-
-  LOG(INFO) << "Removed all filters for agent " << slaveId;
-}
-
-
-void DummyMesosAllocatorProcess::activateSlave(
+void DummyAllocatorProcess::activateSlave(
     const SlaveID& slaveId)
 {
-  LOG(INFO) << "Agent " << slaveId << " reactivated";
+   LOG(INFO) << "Agent " << slaveId << " reactivated";
 }
 
 
-void DummyMesosAllocatorProcess::deactivateSlave(
+void DummyAllocatorProcess::deactivateSlave(
     const SlaveID& slaveId)
 {
+
   LOG(INFO) << "Agent " << slaveId << " deactivated";
 }
 
 
-void DummyMesosAllocatorProcess::updateWhitelist(
+void DummyAllocatorProcess::updateWhitelist(
     const Option<hashset<string>>& _whitelist)
 {
-  LOG(INFO) << "Updated dummy whitelist";
+     LOG(INFO) << "Updated agents and their whitelist: ";
+
 }
 
 
-void DummyMesosAllocatorProcess::requestResources(
+void DummyAllocatorProcess::requestResources(
     const FrameworkID& frameworkId,
     const vector<Request>& requests)
 {
-
-  LOG(INFO) << "Received resource request from dummy framework " << frameworkId;
+ 
+  LOG(INFO) << "Received resource request from framework " << frameworkId;
 }
 
 
-void DummyMesosAllocatorProcess::updateAllocation(
+void DummyAllocatorProcess::updateAllocation(
     const FrameworkID& frameworkId,
     const SlaveID& slaveId,
     const Resources& offeredResources,
     const vector<ResourceConversion>& conversions)
 {
-  
-  LOG(INFO) << "Updated allocation of dummy framework " << frameworkId
-            << " on agent " << slaveId
-            << " from " << frameworkAllocation
-            << " to " << updatedFrameworkAllocation;
+ 
+  LOG(INFO) << "Updated allocation of framework " << frameworkId
+            << " on agent " << slaveId;
 }
 
 
-Future<Nothing> DummyMesosAllocatorProcess::updateAvailable(
+Future<Nothing> DummyAllocatorProcess::updateAvailable(
     const SlaveID& slaveId,
     const vector<Offer::Operation>& operations)
 {
-    LOG(INFO) << "Updated available dummy slave" << slaveId;
-    return Nothing();
+ LOG(INFO) << "Update available called";
+    return Failure("temp error");
 }
 
 
-void DummyMesosAllocatorProcess::updateUnavailability(
+void DummyAllocatorProcess::updateUnavailability(
     const SlaveID& slaveId,
     const Option<Unavailability>& unavailability)
 {
-  LOG(INFO) << "Updated unavailable dummy slave" << slaveId;
+ LOG(INFO) << "Updated unavailability called"
+            << " on agent " << slaveId; 
 }
 
 
-void DummyMesosAllocatorProcess::updateInverseOffer(
+void DummyAllocatorProcess::updateInverseOffer(
     const SlaveID& slaveId,
     const FrameworkID& frameworkId,
     const Option<UnavailableResources>& unavailableResources,
     const Option<InverseOfferStatus>& status,
     const Option<Filters>& filters)
 {
- LOG(INFO) << "Updated dummy inverse offer" << slaveId;
+  LOG(INFO) << "Updated inverse offer called"
+            << " on agent " << slaveId; 
 }
 
 
 Future<hashmap<SlaveID, hashmap<FrameworkID, InverseOfferStatus>>>
-DummyMesosAllocatorProcess::getInverseOfferStatuses()
+DummyAllocatorProcess::getInverseOfferStatuses()
 {
+  
+  
 
   hashmap<SlaveID, hashmap<FrameworkID, InverseOfferStatus>> result;
+
+LOG(INFO) << "getInverseOfferStatuses called";
 
   return result;
 }
 
 
-void DummyMesosAllocatorProcess::recoverResources(
+void DummyAllocatorProcess::recoverResources(
     const FrameworkID& frameworkId,
     const SlaveID& slaveId,
     const Resources& resources,
     const Option<Filters>& filters)
 {
-  LOG(INFO) << "Recovered dummy resources" << frameworkId;
+  LOG(INFO) << "recoverResources called";
 }
 
 
-void DummyMesosAllocatorProcess::suppressRoles(
-    Framework& framework, const set<string>& roles)
-{
-  // TODO(bmahler): This logs roles that were already suppressed,
-  // only log roles that transitioned from unsuppressed -> suppressed.
-  LOG(INFO) << "Suppressed dummy offers for roles " << stringify(roles)
-            << " of framework " << framework.frameworkId;
-}
 
 
-void DummyMesosAllocatorProcess::suppressOffers(
+void DummyAllocatorProcess::suppressOffers(
     const FrameworkID& frameworkId,
     const set<string>& roles_)
 {
-    LOG(INFO) << "SUPPRESSED OFFERS";
+  LOG(INFO) << "suppressOffers called";
 }
 
 
-void DummyMesosAllocatorProcess::reviveRoles(
-    Framework& framework, const set<string>& roles)
-{
-  // TODO(bmahler): This logs roles that were already unsuppressed,
-  // only log roles that transitioned from suppressed -> unsuppressed.
-  LOG(INFO) << "Unsuppressed offers and cleared filters for roles "
-            << stringify(roles) << " of framework " << framework.frameworkId;
-}
-
-
-void DummyMesosAllocatorProcess::reviveOffers(
+void DummyAllocatorProcess::reviveOffers(
     const FrameworkID& frameworkId,
     const set<string>& roles)
 {
-  CHECK(initialized);
-
-  Framework& framework = *CHECK_NOTNONE(getFramework(frameworkId));
-
-  reviveRoles(framework, roles.empty() ? framework.roles : roles);
-
-  generateOffers();
+LOG(INFO) << "reviveOffers called";
 }
 
 
-void DummyMesosAllocatorProcess::updateQuota(
+void DummyAllocatorProcess::updateQuota(
     const string& role, const Quota& quota)
 {
-  CHECK(initialized);
+ 
 
-  LOG(INFO) << "Updated dummy quota for role '" << role << "', "
+  LOG(INFO) << "Updated quota for role '" << role << "', "
             << " guarantees: " << quota.guarantees
             << " limits: " << quota.limits;
 }
 
 
-void DummyMesosAllocatorProcess::updateWeights(
+void DummyAllocatorProcess::updateWeights(
     const vector<WeightInfo>& weightInfos)
 {
-    LOG(INFO) << "UPDATED DUMMY WEIGHTS";
-
-  // NOTE: Since weight changes do not result in rebalancing of
-  // offered resources, we do not trigger an allocation here; the
-  // weight change will be reflected in subsequent allocations.
-  //
-  // If we add the ability for weight changes to incur a rebalancing
-  // of offered resources, then we should trigger that here.
+ LOG(INFO) << "updateWeights called";
 }
 
 
-void DummyMesosAllocatorProcess::pause()
+void DummyAllocatorProcess::pause()
 {
-  if (!paused) {
-    VLOG(1) << "Allocation paused";
-
-    paused = true;
-  }
+LOG(INFO) << "pause called";
 }
 
 
-void DummyMesosAllocatorProcess::resume()
+void DummyAllocatorProcess::resume()
 {
-  if (paused) {
-    VLOG(1) << "Allocation resumed";
-
-    paused = false;
-  }
+ LOG(INFO) << "resume called";
 }
+
+
+
+} // namespace internal {
+} // namespace allocator {
+} // namespace master {
+} // namespace internal {
+} // namespace mesos {

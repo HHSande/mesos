@@ -1,48 +1,80 @@
-#ifndef __MASTER_ALLOCATOR_MESOS_ALLOCATOR_HPP__
-#define __MASTER_ALLOCATOR_MESOS_ALLOCATOR_HPP__
+//
+// Dummy Allocator
+//
 
-#include <mesos/allocator/allocator.hpp>
+#ifndef __MASTER_ALLOCATOR_MESOS_DUMMY_HPP__
+#define __MASTER_ALLOCATOR_MESOS_DUMMY_HPP__
 
-#include <process/dispatch.hpp>
+#include <memory>
+#include <set>
+#include <string>
+
+#include <mesos/mesos.hpp>
+
 #include <process/future.hpp>
-#include <process/process.hpp>
+#include <process/id.hpp>
+#include <process/owned.hpp>
 
+#include <stout/boundedhashmap.hpp>
+#include <stout/duration.hpp>
 #include <stout/hashmap.hpp>
-#include <stout/try.hpp>
+#include <stout/hashset.hpp>
+#include <stout/lambda.hpp>
+#include <stout/option.hpp>
+
+#include "common/protobuf_utils.hpp"
+
+#include "master/allocator/mesos/allocator.hpp"
+#include "master/allocator/mesos/metrics.hpp"
+
+#include "master/allocator/mesos/sorter/random/sorter.hpp"
+
+#include "master/constants.hpp"
 
 namespace mesos {
 namespace internal {
 namespace master {
 namespace allocator {
 
-class DummyMesosAllocatorProcess;
+template <
+    typename RoleSorter,
+    typename FrameworkSorter>
+class DummyAllocatorProcess;
 
-// A wrapper for Process-based allocators. It redirects all function
-// invocations to the underlying AllocatorProcess and manages its
-// lifetime. We ensure the template parameter AllocatorProcess
-// implements DummyMesosAllocatorProcess by storing a pointer to it.
-template <typename AllocatorProcess>
-class DummyMesosAllocator : public mesos::allocator::Allocator
+
+typedef DummyAllocatorProcess<RandomSorter, RandomSorter>
+DummyRandomAllocatorProcess;
+
+typedef MesosAllocator<DummyRandomAllocatorProcess>
+DummyAllocator;
+
+
+
+
+namespace internal {
+
+class DummyAllocatorProcess : public MesosAllocatorProcess
 {
 public:
-  // Factory to allow for typed tests.
-  static Try<mesos::allocator::Allocator*> create();
+  DummyAllocatorProcess(
+      const std::function<Sorter*()>& roleSorterFactory,
+      const std::function<Sorter*()>& _frameworkSorterFactory){}
 
-  ~DummyMesosAllocator() override;
+  ~DummyAllocatorProcess() override {}
 
   void initialize(
       const mesos::allocator::Options& options,
       const lambda::function<
           void(const FrameworkID&,
                const hashmap<std::string, hashmap<SlaveID, Resources>>&)>&
-                   offerCallback,
+        offerCallback,
       const lambda::function<
           void(const FrameworkID&,
                const hashmap<SlaveID, UnavailableResources>&)>&
         inverseOfferCallback) override;
 
   void recover(
-      const int expectedAgentCount,
+      const int _expectedAgentCount,
       const hashmap<std::string, Quota>& quotas) override;
 
   void addFramework(
@@ -89,10 +121,10 @@ public:
       const Resources& total,
       const hashmap<FrameworkID, Resources>& used) override;
 
-  void activateSlave(
+  void deactivateSlave(
       const SlaveID& slaveId) override;
 
-  void deactivateSlave(
+  void activateSlave(
       const SlaveID& slaveId) override;
 
   void updateWhitelist(
@@ -125,7 +157,7 @@ public:
 
   process::Future<
       hashmap<SlaveID,
-              hashmap<FrameworkID, mesos::allocator::InverseOfferStatus>>>
+      hashmap<FrameworkID, mesos::allocator::InverseOfferStatus>>>
     getInverseOfferStatuses() override;
 
   void recoverResources(
@@ -153,12 +185,34 @@ public:
 
   void resume() override;
 
-private:
-  DummyMesosAllocator();
-  DummyMesosAllocator(const DummyMesosAllocator&); // Not copyable.
-  DummyMesosAllocator& operator=(const DummyMesosAllocator&); // Not assignable.
-
-  DummyMesosAllocatorProcess* process;
+  
 };
 
-#endif
+
+} // namespace internal {
+
+// We map the templatized version of the `HierarchicalAllocatorProcess` to one
+// that relies on sorter factories in the internal namespace. This allows us
+// to keep the implementation of the allocator in the implementation file.
+template <
+    typename RoleSorter,
+    typename FrameworkSorter>
+class DummyAllocatorProcess
+  : public internal::DummyAllocatorProcess
+{
+public:
+  DummyAllocatorProcess()
+    : ProcessBase(process::ID::generate("dummyallocator")),
+      internal::DummyAllocatorProcess(
+          [this]() -> Sorter* {
+            return new RoleSorter(this->self(), "allocator/mesos/roles/");
+          },
+          []() -> Sorter* { return new FrameworkSorter(); }) {}
+};
+
+} // namespace allocator {
+} // namespace master {
+} // namespace internal {
+} // namespace mesos {
+
+#endif 

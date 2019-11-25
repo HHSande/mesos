@@ -1,10 +1,10 @@
 {
     "libraries": [
       {
-        "file": "/home/hanshenriksande/Master/mesos/build/src/examples/.libs/libtestallocator.la",
+        "file": "/home/hanshenriksande/Master/mesos/build/src/.libs/libdummyallocator.so",
         "modules": [
           {
-            "name": "test_allocator_module"
+            "name": "DummyMesosAllocator"
           }
           
         ]

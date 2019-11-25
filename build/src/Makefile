@@ -528,6 +528,17 @@ am__objects_1 = ../include/csi/v0/libcsi_la-csi.grpc.pb.lo \
 nodist_libcsi_la_OBJECTS = $(am__objects_1)
 libcsi_la_OBJECTS = $(am_libcsi_la_OBJECTS) \
 	$(nodist_libcsi_la_OBJECTS)
+libdummyallocator_la_LIBADD =
+am_libdummyallocator_la_OBJECTS =  \
+	examples/libdummyallocator_la-dummymodule.lo
+libdummyallocator_la_OBJECTS = $(am_libdummyallocator_la_OBJECTS)
+libdummyallocator_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CXX \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CXXLD) \
+	$(AM_CXXFLAGS) $(CXXFLAGS) $(libdummyallocator_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_libdummyallocator_la_rpath =
+#am_libdummyallocator_la_rpath = -rpath \
+#	$(pkgmoduledir)
 libexamplemodule_la_LIBADD =
 am_libexamplemodule_la_OBJECTS =  \
 	examples/libexamplemodule_la-example_module_impl.lo
@@ -702,6 +713,8 @@ am__libmesos_no_3rdparty_la_SOURCES_DIST = master/registry.proto \
 	master/allocator/mesos/allocator.hpp \
 	master/allocator/mesos/hierarchical.cpp \
 	master/allocator/mesos/hierarchical.hpp \
+	master/allocator/mesos/dummy.cpp \
+	master/allocator/mesos/dummy.hpp \
 	master/allocator/mesos/metrics.cpp \
 	master/allocator/mesos/metrics.hpp \
 	master/allocator/mesos/sorter/drf/metrics.cpp \
@@ -1104,6 +1117,7 @@ am_libmesos_no_3rdparty_la_OBJECTS =  \
 	logging/libmesos_no_3rdparty_la-logging.lo \
 	master/allocator/libmesos_no_3rdparty_la-allocator.lo \
 	master/allocator/mesos/libmesos_no_3rdparty_la-hierarchical.lo \
+	master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo \
 	master/allocator/mesos/libmesos_no_3rdparty_la-metrics.lo \
 	master/allocator/mesos/sorter/drf/libmesos_no_3rdparty_la-metrics.lo \
 	master/allocator/mesos/sorter/drf/libmesos_no_3rdparty_la-sorter.lo \
@@ -2018,7 +2032,8 @@ am__v_CCLD_ = $(am__v_CCLD_$(AM_DEFAULT_VERBOSITY))
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(libbuild_la_SOURCES) $(libcsi_la_SOURCES) \
-	$(nodist_libcsi_la_SOURCES) $(libexamplemodule_la_SOURCES) \
+	$(nodist_libcsi_la_SOURCES) $(libdummyallocator_la_SOURCES) \
+	$(libexamplemodule_la_SOURCES) \
 	$(libfixed_resource_estimator_la_SOURCES) \
 	$(libjava_la_SOURCES) $(nodist_libjava_la_SOURCES) \
 	$(libload_qos_controller_la_SOURCES) $(liblog_la_SOURCES) \
@@ -2065,7 +2080,7 @@ SOURCES = $(libbuild_la_SOURCES) $(libcsi_la_SOURCES) \
 	$(test_helper_SOURCES) $(test_http_executor_SOURCES) \
 	$(test_http_framework_SOURCES)
 DIST_SOURCES = $(libbuild_la_SOURCES) $(libcsi_la_SOURCES) \
-	$(libexamplemodule_la_SOURCES) \
+	$(libdummyallocator_la_SOURCES) $(libexamplemodule_la_SOURCES) \
 	$(libfixed_resource_estimator_la_SOURCES) \
 	$(am__libjava_la_SOURCES_DIST) \
 	$(libload_qos_controller_la_SOURCES) $(liblog_la_SOURCES) \
@@ -3216,6 +3231,8 @@ libmesos_no_3rdparty_la_SOURCES = master/registry.proto \
 	master/allocator/mesos/allocator.hpp \
 	master/allocator/mesos/hierarchical.cpp \
 	master/allocator/mesos/hierarchical.hpp \
+	master/allocator/mesos/dummy.cpp \
+	master/allocator/mesos/dummy.hpp \
 	master/allocator/mesos/metrics.cpp \
 	master/allocator/mesos/metrics.hpp \
 	master/allocator/mesos/sorter/drf/metrics.cpp \
@@ -3972,6 +3989,7 @@ MESOS_TEST_MODULE_LDFLAGS = $(MESOS_MODULE_LDFLAGS) $(am__append_55)
 MESOS_TEST_MODULES = \
   libexamplemodule.la		\
   libtestallocator.la		\
+  libdummyallocator.la  \
   libtestanonymous.la		\
   libtestauthentication.la	\
   libtestauthorizer.la		\
@@ -4018,9 +4036,9 @@ libtestallocator_la_CPPFLAGS = $(MESOS_CPPFLAGS) #Må bare .cpp fil
 libtestallocator_la_LDFLAGS = $(MESOS_TEST_MODULE_LDFLAGS)
 
 #Library containing my dummy allocator
-libdummyallocator_la_SOURCES = /home/hanshenriksande/Master/mesos/include/mesos/module/dummymodule.cpp
+libdummyallocator_la_SOURCES = examples/dummymodule.cpp
 libdummyallocator_la_CPPFLAGS = $(MESOS_CPPFLAGS)
-libdummyallocator_la_LDFLAGS = $(MESOS_MODULE_LDFLAGS)
+libdummyallocator_la_LDFLAGS = $(MESOS_TEST_MODULE_LDFLAGS)
 
 # Library containing example test sandbox container logger module.
 libtestcontainer_logger_la_SOURCES = \
@@ -4425,6 +4443,11 @@ examples/$(am__dirstamp):
 examples/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) examples/$(DEPDIR)
 	@: > examples/$(DEPDIR)/$(am__dirstamp)
+examples/libdummyallocator_la-dummymodule.lo:  \
+	examples/$(am__dirstamp) examples/$(DEPDIR)/$(am__dirstamp)
+
+libdummyallocator.la: $(libdummyallocator_la_OBJECTS) $(libdummyallocator_la_DEPENDENCIES) $(EXTRA_libdummyallocator_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(libdummyallocator_la_LINK) $(am_libdummyallocator_la_rpath) $(libdummyallocator_la_OBJECTS) $(libdummyallocator_la_LIBADD) $(LIBS)
 examples/libexamplemodule_la-example_module_impl.lo:  \
 	examples/$(am__dirstamp) examples/$(DEPDIR)/$(am__dirstamp)
 
@@ -4765,6 +4788,9 @@ master/allocator/mesos/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) master/allocator/mesos/$(DEPDIR)
 	@: > master/allocator/mesos/$(DEPDIR)/$(am__dirstamp)
 master/allocator/mesos/libmesos_no_3rdparty_la-hierarchical.lo:  \
+	master/allocator/mesos/$(am__dirstamp) \
+	master/allocator/mesos/$(DEPDIR)/$(am__dirstamp)
+master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo:  \
 	master/allocator/mesos/$(am__dirstamp) \
 	master/allocator/mesos/$(DEPDIR)/$(am__dirstamp)
 master/allocator/mesos/libmesos_no_3rdparty_la-metrics.lo:  \
@@ -5889,8 +5915,6 @@ libstate.la: $(libstate_la_OBJECTS) $(libstate_la_DEPENDENCIES) $(EXTRA_libstate
 	$(AM_V_CXXLD)$(CXXLINK)  $(libstate_la_OBJECTS) $(libstate_la_LIBADD) $(LIBS)
 examples/libtestallocator_la-test_allocator_module.lo:  \
 	examples/$(am__dirstamp) examples/$(DEPDIR)/$(am__dirstamp)
-include/mesos/module/libdummyallocator_la-dummymodule.lo: \
-	include/mesos/module/$(am__dirstamp) include/mesos/module/$(DEPDIR)/$(am__dirstamp)
 
 libtestallocator.la: $(libtestallocator_la_OBJECTS) $(libtestallocator_la_DEPENDENCIES) $(EXTRA_libtestallocator_la_DEPENDENCIES) 
 	$(AM_V_CXXLD)$(libtestallocator_la_LINK) $(am_libtestallocator_la_rpath) $(libtestallocator_la_OBJECTS) $(libtestallocator_la_LIBADD) $(LIBS)
@@ -7343,6 +7367,7 @@ include examples/$(DEPDIR)/disk_full_framework-disk_full_framework.Po
 include examples/$(DEPDIR)/docker_no_executor_framework-docker_no_executor_framework.Po
 include examples/$(DEPDIR)/dynamic_reservation_framework-dynamic_reservation_framework.Po
 include examples/$(DEPDIR)/inverse_offer_framework-inverse_offer_framework.Po
+include examples/$(DEPDIR)/libdummyallocator_la-dummymodule.Plo
 include examples/$(DEPDIR)/libexamplemodule_la-example_module_impl.Plo
 include examples/$(DEPDIR)/libtestallocator_la-test_allocator_module.Plo
 include examples/$(DEPDIR)/libtestanonymous_la-test_anonymous_module.Plo
@@ -7454,6 +7479,7 @@ include master/$(DEPDIR)/libmesos_no_3rdparty_la-weights.Plo
 include master/$(DEPDIR)/libmesos_no_3rdparty_la-weights_handler.Plo
 include master/$(DEPDIR)/mesos_master-main.Po
 include master/allocator/$(DEPDIR)/libmesos_no_3rdparty_la-allocator.Plo
+include master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-dummy.Plo
 include master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-hierarchical.Plo
 include master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-metrics.Plo
 include master/allocator/mesos/sorter/drf/$(DEPDIR)/libmesos_no_3rdparty_la-metrics.Plo
@@ -7981,6 +8007,13 @@ csi/libcsi_la-state.pb.lo: csi/state.pb.cc
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcsi_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o csi/libcsi_la-state.pb.lo `test -f 'csi/state.pb.cc' || echo '$(srcdir)/'`csi/state.pb.cc
 
+examples/libdummyallocator_la-dummymodule.lo: examples/dummymodule.cpp
+	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libdummyallocator_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT examples/libdummyallocator_la-dummymodule.lo -MD -MP -MF examples/$(DEPDIR)/libdummyallocator_la-dummymodule.Tpo -c -o examples/libdummyallocator_la-dummymodule.lo `test -f 'examples/dummymodule.cpp' || echo '$(srcdir)/'`examples/dummymodule.cpp
+	$(AM_V_at)$(am__mv) examples/$(DEPDIR)/libdummyallocator_la-dummymodule.Tpo examples/$(DEPDIR)/libdummyallocator_la-dummymodule.Plo
+#	$(AM_V_CXX)source='examples/dummymodule.cpp' object='examples/libdummyallocator_la-dummymodule.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libdummyallocator_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o examples/libdummyallocator_la-dummymodule.lo `test -f 'examples/dummymodule.cpp' || echo '$(srcdir)/'`examples/dummymodule.cpp
+
 examples/libexamplemodule_la-example_module_impl.lo: examples/example_module_impl.cpp
 	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libexamplemodule_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT examples/libexamplemodule_la-example_module_impl.lo -MD -MP -MF examples/$(DEPDIR)/libexamplemodule_la-example_module_impl.Tpo -c -o examples/libexamplemodule_la-example_module_impl.lo `test -f 'examples/example_module_impl.cpp' || echo '$(srcdir)/'`examples/example_module_impl.cpp
 	$(AM_V_at)$(am__mv) examples/$(DEPDIR)/libexamplemodule_la-example_module_impl.Tpo examples/$(DEPDIR)/libexamplemodule_la-example_module_impl.Plo
@@ -8505,6 +8538,13 @@ master/allocator/mesos/libmesos_no_3rdparty_la-hierarchical.lo: master/allocator
 #	$(AM_V_CXX)source='master/allocator/mesos/hierarchical.cpp' object='master/allocator/mesos/libmesos_no_3rdparty_la-hierarchical.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmesos_no_3rdparty_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o master/allocator/mesos/libmesos_no_3rdparty_la-hierarchical.lo `test -f 'master/allocator/mesos/hierarchical.cpp' || echo '$(srcdir)/'`master/allocator/mesos/hierarchical.cpp
+
+master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo: master/allocator/mesos/dummy.cpp
+	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmesos_no_3rdparty_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo -MD -MP -MF master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-dummy.Tpo -c -o master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo `test -f 'master/allocator/mesos/dummy.cpp' || echo '$(srcdir)/'`master/allocator/mesos/dummy.cpp
+	$(AM_V_at)$(am__mv) master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-dummy.Tpo master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-dummy.Plo
+#	$(AM_V_CXX)source='master/allocator/mesos/dummy.cpp' object='master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmesos_no_3rdparty_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo `test -f 'master/allocator/mesos/dummy.cpp' || echo '$(srcdir)/'`master/allocator/mesos/dummy.cpp
 
 master/allocator/mesos/libmesos_no_3rdparty_la-metrics.lo: master/allocator/mesos/metrics.cpp
 	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmesos_no_3rdparty_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT master/allocator/mesos/libmesos_no_3rdparty_la-metrics.lo -MD -MP -MF master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-metrics.Tpo -c -o master/allocator/mesos/libmesos_no_3rdparty_la-metrics.lo `test -f 'master/allocator/mesos/metrics.cpp' || echo '$(srcdir)/'`master/allocator/mesos/metrics.cpp
@@ -10164,11 +10204,6 @@ examples/libtestallocator_la-test_allocator_module.lo: examples/test_allocator_m
 #	$(AM_V_CXX)source='examples/test_allocator_module.cpp' object='examples/libtestallocator_la-test_allocator_module.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtestallocator_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o examples/libtestallocator_la-test_allocator_module.lo `test -f 'examples/test_allocator_module.cpp' || echo '$(srcdir)/'`examples/test_allocator_module.cpp
-
-#FIRST STEP
-include/mesos/module/libdummyallocator_la-dummymodule.lo: include/mesos/module/dummymodule.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libdummyallocator_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT include/mesos/module/libdummyallocator_la-dummymodule.lo -MD -MP -MF include/mesos/module/$(DEPDIR)/libdummyallocator_la-dummymodule.Tpo -c -o include/mesos/module/libdummyallocator_la-dummymodule.lo `test -f 'include/mesos/module/dummymodule.cpp' || echo '$(srcdir)/'`include/mesos/module/dummymodule.cpp
-	$(AM_V_at)$(am__mv) include/mesos/module/$(DEPDIR)/libdummyallocator_la-dummymodule.Tpo examples/$(DEPDIR)/libdummyallocator_la-dummymodule.Plo
 
 examples/libtestanonymous_la-test_anonymous_module.lo: examples/test_anonymous_module.cpp
 	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libtestanonymous_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT examples/libtestanonymous_la-test_anonymous_module.lo -MD -MP -MF examples/$(DEPDIR)/libtestanonymous_la-test_anonymous_module.Tpo -c -o examples/libtestanonymous_la-test_anonymous_module.lo `test -f 'examples/test_anonymous_module.cpp' || echo '$(srcdir)/'`examples/test_anonymous_module.cpp
@@ -15321,8 +15356,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 #install-exec-local:
-installcheck-local:
 #uninstall-local:
+installcheck-local:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-checkPROGRAMS clean-generic \

@@ -1125,6 +1125,8 @@ libmesos_no_3rdparty_la_SOURCES +=					\
   master/allocator/mesos/allocator.hpp					\
   master/allocator/mesos/hierarchical.cpp				\
   master/allocator/mesos/hierarchical.hpp				\
+  master/allocator/mesos/dummy.cpp				\
+  master/allocator/mesos/dummy.hpp				\
   master/allocator/mesos/metrics.cpp					\
   master/allocator/mesos/metrics.hpp					\
   master/allocator/mesos/sorter/drf/metrics.cpp				\
@@ -2518,6 +2520,7 @@ endif
 MESOS_TEST_MODULES =		\
   libexamplemodule.la		\
   libtestallocator.la		\
+  libdummyallocator.la  \
   libtestanonymous.la		\
   libtestauthentication.la	\
   libtestauthorizer.la		\
@@ -2563,9 +2566,9 @@ libtestallocator_la_CPPFLAGS = $(MESOS_CPPFLAGS) #Må bare .cpp fil
 libtestallocator_la_LDFLAGS = $(MESOS_TEST_MODULE_LDFLAGS)
 
 #Library containing my dummy allocator
-dummyallocator_la_SOURCES = /home/hanshenriksande/Master/mesos/include/mesos/module/dummymodule.cpp
-dummyallocator_la_CPPFLAGS = $(MESOS_CPPFLAGS)
-dummyallocator_la_LDFLAGS = $(MESOS_MODULE_LDFLAGS)
+libdummyallocator_la_SOURCES = examples/dummymodule.cpp
+libdummyallocator_la_CPPFLAGS = $(MESOS_CPPFLAGS)
+libdummyallocator_la_LDFLAGS = $(MESOS_TEST_MODULE_LDFLAGS)
 
 # Library containing example test sandbox container logger module.
 libtestcontainer_logger_la_SOURCES =		\

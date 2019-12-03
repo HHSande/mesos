@@ -1638,7 +1638,7 @@ tests/mesos_tests-api_tests.o: ../../src/tests/api_tests.cpp \
  ../../src/slave/containerizer/mesos/provisioner/store.hpp \
  ../../src/tests/allocator.hpp \
  ../../include/mesos/allocator/allocator.hpp \
- ../../src/master/allocator/mesos/hierarchical.hpp \
+ ../../src/master/allocator/mesos/dummy.hpp \
  ../../src/master/allocator/mesos/allocator.hpp \
  ../../src/master/allocator/mesos/metrics.hpp \
  ../../3rdparty/libprocess/include/process/metrics/push_gauge.hpp \
@@ -5210,7 +5210,7 @@ slave/volume_gid_manager/state.pb.h:
 
 ../../include/mesos/allocator/allocator.hpp:
 
-../../src/master/allocator/mesos/hierarchical.hpp:
+../../src/master/allocator/mesos/dummy.hpp:
 
 ../../src/master/allocator/mesos/allocator.hpp:
 

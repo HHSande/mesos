@@ -34,7 +34,7 @@
 
 #include "master/constants.hpp"
 
-#include "master/allocator/mesos/hierarchical.hpp"
+#include "master/allocator/mesos/dummy.hpp"
 
 #include "tests/allocator.hpp"
 #include "tests/mesos.hpp"
@@ -42,7 +42,7 @@
 using mesos::internal::master::MIN_CPUS;
 using mesos::internal::master::MIN_MEM;
 
-using mesos::internal::master::allocator::HierarchicalDRFAllocator;
+using mesos::internal::master::allocator::DummyAllocator;
 
 using mesos::internal::slave::AGENT_CAPABILITIES;
 

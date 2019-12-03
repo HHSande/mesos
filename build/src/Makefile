@@ -711,8 +711,6 @@ am__libmesos_no_3rdparty_la_SOURCES_DIST = master/registry.proto \
 	logging/flags.cpp logging/flags.hpp logging/logging.cpp \
 	logging/logging.hpp master/allocator/allocator.cpp \
 	master/allocator/mesos/allocator.hpp \
-	master/allocator/mesos/hierarchical.cpp \
-	master/allocator/mesos/hierarchical.hpp \
 	master/allocator/mesos/dummy.cpp \
 	master/allocator/mesos/dummy.hpp \
 	master/allocator/mesos/metrics.cpp \
@@ -1116,7 +1114,6 @@ am_libmesos_no_3rdparty_la_OBJECTS =  \
 	logging/libmesos_no_3rdparty_la-flags.lo \
 	logging/libmesos_no_3rdparty_la-logging.lo \
 	master/allocator/libmesos_no_3rdparty_la-allocator.lo \
-	master/allocator/mesos/libmesos_no_3rdparty_la-hierarchical.lo \
 	master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo \
 	master/allocator/mesos/libmesos_no_3rdparty_la-metrics.lo \
 	master/allocator/mesos/sorter/drf/libmesos_no_3rdparty_la-metrics.lo \
@@ -3229,8 +3226,6 @@ libmesos_no_3rdparty_la_SOURCES = master/registry.proto \
 	logging/flags.cpp logging/flags.hpp logging/logging.cpp \
 	logging/logging.hpp master/allocator/allocator.cpp \
 	master/allocator/mesos/allocator.hpp \
-	master/allocator/mesos/hierarchical.cpp \
-	master/allocator/mesos/hierarchical.hpp \
 	master/allocator/mesos/dummy.cpp \
 	master/allocator/mesos/dummy.hpp \
 	master/allocator/mesos/metrics.cpp \
@@ -4787,9 +4782,6 @@ master/allocator/mesos/$(am__dirstamp):
 master/allocator/mesos/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) master/allocator/mesos/$(DEPDIR)
 	@: > master/allocator/mesos/$(DEPDIR)/$(am__dirstamp)
-master/allocator/mesos/libmesos_no_3rdparty_la-hierarchical.lo:  \
-	master/allocator/mesos/$(am__dirstamp) \
-	master/allocator/mesos/$(DEPDIR)/$(am__dirstamp)
 master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo:  \
 	master/allocator/mesos/$(am__dirstamp) \
 	master/allocator/mesos/$(DEPDIR)/$(am__dirstamp)
@@ -7480,7 +7472,6 @@ include master/$(DEPDIR)/libmesos_no_3rdparty_la-weights_handler.Plo
 include master/$(DEPDIR)/mesos_master-main.Po
 include master/allocator/$(DEPDIR)/libmesos_no_3rdparty_la-allocator.Plo
 include master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-dummy.Plo
-include master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-hierarchical.Plo
 include master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-metrics.Plo
 include master/allocator/mesos/sorter/drf/$(DEPDIR)/libmesos_no_3rdparty_la-metrics.Plo
 include master/allocator/mesos/sorter/drf/$(DEPDIR)/libmesos_no_3rdparty_la-sorter.Plo
@@ -8531,13 +8522,6 @@ master/allocator/libmesos_no_3rdparty_la-allocator.lo: master/allocator/allocato
 #	$(AM_V_CXX)source='master/allocator/allocator.cpp' object='master/allocator/libmesos_no_3rdparty_la-allocator.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmesos_no_3rdparty_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o master/allocator/libmesos_no_3rdparty_la-allocator.lo `test -f 'master/allocator/allocator.cpp' || echo '$(srcdir)/'`master/allocator/allocator.cpp
-
-master/allocator/mesos/libmesos_no_3rdparty_la-hierarchical.lo: master/allocator/mesos/hierarchical.cpp
-	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmesos_no_3rdparty_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT master/allocator/mesos/libmesos_no_3rdparty_la-hierarchical.lo -MD -MP -MF master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-hierarchical.Tpo -c -o master/allocator/mesos/libmesos_no_3rdparty_la-hierarchical.lo `test -f 'master/allocator/mesos/hierarchical.cpp' || echo '$(srcdir)/'`master/allocator/mesos/hierarchical.cpp
-	$(AM_V_at)$(am__mv) master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-hierarchical.Tpo master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-hierarchical.Plo
-#	$(AM_V_CXX)source='master/allocator/mesos/hierarchical.cpp' object='master/allocator/mesos/libmesos_no_3rdparty_la-hierarchical.lo' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmesos_no_3rdparty_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o master/allocator/mesos/libmesos_no_3rdparty_la-hierarchical.lo `test -f 'master/allocator/mesos/hierarchical.cpp' || echo '$(srcdir)/'`master/allocator/mesos/hierarchical.cpp
 
 master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo: master/allocator/mesos/dummy.cpp
 	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmesos_no_3rdparty_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo -MD -MP -MF master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-dummy.Tpo -c -o master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo `test -f 'master/allocator/mesos/dummy.cpp' || echo '$(srcdir)/'`master/allocator/mesos/dummy.cpp
@@ -15355,8 +15339,8 @@ maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
-#install-exec-local:
 #uninstall-local:
+#install-exec-local:
 installcheck-local:
 clean: clean-am
 

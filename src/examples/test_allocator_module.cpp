@@ -25,17 +25,17 @@
 
 #include "master/constants.hpp"
 
-#include "master/allocator/mesos/hierarchical.hpp"
+#include "master/allocator/mesos/dummy.hpp"
 
 using namespace mesos;
 
 using mesos::allocator::Allocator;
-using mesos::internal::master::allocator::HierarchicalDRFAllocator;
+using mesos::internal::master::allocator::DummyAllocator;
 
 
 static Allocator* createDRFAllocator(const Parameters& parameters)
 {
-  Try<Allocator*> allocator = HierarchicalDRFAllocator::create();
+  Try<Allocator*> allocator = DummyAllocator::create();
   if (allocator.isError()) {
     return nullptr;
   }

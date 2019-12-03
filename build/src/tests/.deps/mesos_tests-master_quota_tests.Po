@@ -1619,7 +1619,7 @@ tests/mesos_tests-master_quota_tests.o: \
  ../../src/status_update_manager/status_update_manager_process.hpp \
  ../../src/tests/allocator.hpp \
  ../../3rdparty/libprocess/include/process/gmock.hpp \
- ../../src/master/allocator/mesos/hierarchical.hpp \
+ ../../src/master/allocator/mesos/dummy.hpp \
  ../../src/master/allocator/mesos/allocator.hpp \
  ../../src/master/allocator/mesos/metrics.hpp \
  ../../3rdparty/libprocess/include/process/metrics/timer.hpp \
@@ -5168,7 +5168,7 @@ slave/volume_gid_manager/state.pb.h:
 
 ../../3rdparty/libprocess/include/process/gmock.hpp:
 
-../../src/master/allocator/mesos/hierarchical.hpp:
+../../src/master/allocator/mesos/dummy.hpp:
 
 ../../src/master/allocator/mesos/allocator.hpp:
 

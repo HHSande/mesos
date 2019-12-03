@@ -1481,7 +1481,7 @@ tests/mesos_tests-hierarchical_allocator_benchmarks.o: \
  ../../3rdparty/stout/include/stout/duration.hpp \
  ../../3rdparty/libprocess/include/process/queue.hpp \
  ../../src/master/constants.hpp \
- ../../src/master/allocator/mesos/hierarchical.hpp \
+ ../../src/master/allocator/mesos/dummy.hpp \
  ../../3rdparty/libprocess/include/process/id.hpp \
  ../../3rdparty/stout/include/stout/boundedhashmap.hpp \
  ../../src/common/protobuf_utils.hpp \
@@ -4845,7 +4845,7 @@ tests/mesos_tests-hierarchical_allocator_benchmarks.o: \
 
 ../../src/master/constants.hpp:
 
-../../src/master/allocator/mesos/hierarchical.hpp:
+../../src/master/allocator/mesos/dummy.hpp:
 
 ../../3rdparty/libprocess/include/process/id.hpp:
 

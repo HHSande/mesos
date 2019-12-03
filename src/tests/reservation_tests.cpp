@@ -40,7 +40,7 @@
 #include "master/flags.hpp"
 #include "master/master.hpp"
 
-#include "master/allocator/mesos/hierarchical.hpp"
+#include "master/allocator/mesos/dummy.hpp"
 
 #include "master/detector/standalone.hpp"
 
@@ -50,7 +50,7 @@
 #include "tests/mock_slave.hpp"
 #include "tests/resources_utils.hpp"
 
-using mesos::internal::master::allocator::HierarchicalDRFAllocator;
+using mesos::internal::master::allocator::DummyAllocator;
 
 using mesos::internal::master::Master;
 

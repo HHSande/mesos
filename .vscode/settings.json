@@ -1,3 +1,5 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "editor.multiCursorModifier": "alt",
+    "cquery.cacheDirectory": "${workspaceFolder}/.vscode/cquery_cached_index/",
 }

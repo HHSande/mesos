@@ -1600,7 +1600,7 @@ tests/mesos_tests-slave_recovery_tests.o: \
  ../../3rdparty/libprocess/include/process/metrics/push_gauge.hpp \
  ../../3rdparty/libprocess/include/process/metrics/metrics.hpp \
  ../../src/master/validation.hpp \
- ../../src/master/allocator/mesos/hierarchical.hpp \
+ ../../src/master/allocator/mesos/dummy.hpp \
  ../../src/master/allocator/mesos/allocator.hpp \
  ../../src/master/allocator/mesos/metrics.hpp \
  ../../3rdparty/libprocess/include/process/metrics/timer.hpp \
@@ -5112,7 +5112,7 @@ slave/containerizer/mesos/isolators/network/cni/spec.pb.h:
 
 ../../src/master/validation.hpp:
 
-../../src/master/allocator/mesos/hierarchical.hpp:
+../../src/master/allocator/mesos/dummy.hpp:
 
 ../../src/master/allocator/mesos/allocator.hpp:
 

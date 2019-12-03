@@ -1507,7 +1507,7 @@ tests/mesos_tests-hierarchical_allocator_tests.o: \
  ../include/mesos/resource_provider/resource_provider.pb.h \
  messages/flags.pb.h \
  slave/containerizer/mesos/isolators/network/cni/spec.pb.h \
- ../../src/master/allocator/mesos/hierarchical.hpp \
+ ../../src/master/allocator/mesos/dummy.hpp \
  ../../3rdparty/libprocess/include/process/id.hpp \
  ../../3rdparty/stout/include/stout/boundedhashmap.hpp \
  ../../src/common/protobuf_utils.hpp \
@@ -4906,7 +4906,7 @@ messages/flags.pb.h:
 
 slave/containerizer/mesos/isolators/network/cni/spec.pb.h:
 
-../../src/master/allocator/mesos/hierarchical.hpp:
+../../src/master/allocator/mesos/dummy.hpp:
 
 ../../3rdparty/libprocess/include/process/id.hpp:
 

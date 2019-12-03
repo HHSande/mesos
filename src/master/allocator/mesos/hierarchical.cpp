@@ -13,7 +13,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
+/*
 #include "master/allocator/mesos/hierarchical.hpp"
 
 #include <algorithm>
@@ -2565,7 +2565,7 @@ bool HierarchicalAllocatorProcess::isFiltered(
 
     return true;
   }
-
+  
   // Prevent offers from non-HIERARCHICAL_ROLE agents to be allocated
   // to hierarchical roles.
   if (!slave.capabilities.hierarchicalRole && strings::contains(role, "/")) {
@@ -3020,3 +3020,4 @@ void HierarchicalAllocatorProcess::untrackAllocatedResources(
 } // namespace master {
 } // namespace internal {
 } // namespace mesos {
+*/

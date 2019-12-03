@@ -1486,7 +1486,7 @@ tests/mesos_tests-reservation_tests.o: \
  ../../3rdparty/libprocess/include/process/metrics/push_gauge.hpp \
  ../../3rdparty/libprocess/include/process/metrics/metrics.hpp \
  ../../src/master/validation.hpp \
- ../../src/master/allocator/mesos/hierarchical.hpp \
+ ../../src/master/allocator/mesos/dummy.hpp \
  ../../src/master/allocator/mesos/allocator.hpp \
  ../../src/master/allocator/mesos/metrics.hpp \
  ../../3rdparty/libprocess/include/process/metrics/timer.hpp \
@@ -4860,7 +4860,7 @@ resource_provider/registry.pb.h:
 
 ../../src/master/validation.hpp:
 
-../../src/master/allocator/mesos/hierarchical.hpp:
+../../src/master/allocator/mesos/dummy.hpp:
 
 ../../src/master/allocator/mesos/allocator.hpp:
 

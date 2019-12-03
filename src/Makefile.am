@@ -1123,8 +1123,8 @@ libmesos_no_3rdparty_la_SOURCES +=					\
   logging/logging.hpp							\
   master/allocator/allocator.cpp					\
   master/allocator/mesos/allocator.hpp					\
-  master/allocator/mesos/hierarchical.cpp				\
-  master/allocator/mesos/hierarchical.hpp				\
+  #master/allocator/mesos/hierarchical.cpp				\
+  #master/allocator/mesos/hierarchical.hpp				\
   master/allocator/mesos/dummy.cpp				\
   master/allocator/mesos/dummy.hpp				\
   master/allocator/mesos/metrics.cpp					\

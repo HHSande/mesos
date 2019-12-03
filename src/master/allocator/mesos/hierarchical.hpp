@@ -16,7 +16,7 @@
 
 #ifndef __MASTER_ALLOCATOR_MESOS_HIERARCHICAL_HPP__
 #define __MASTER_ALLOCATOR_MESOS_HIERARCHICAL_HPP__
-
+/*
 #include <memory>
 #include <set>
 #include <string>
@@ -442,6 +442,7 @@ private:
 };
 
 
+
 // Implements the basic allocator algorithm - first pick a role by
 // some criteria, then pick one of their frameworks to allocate to.
 class HierarchicalAllocatorProcess : public MesosAllocatorProcess
@@ -456,7 +457,7 @@ public:
       completedFrameworkMetrics(0),
       roleTree(&metrics),
       roleSorter(roleSorterFactory()),
-      frameworkSorterFactory(_frameworkSorterFactory) {}
+      frameworkSorterFactory(_frameworkSorterFactory)  {}
 
   ~HierarchicalAllocatorProcess() override {}
 
@@ -864,5 +865,5 @@ public:
 } // namespace master {
 } // namespace internal {
 } // namespace mesos {
-
+*/
 #endif // __MASTER_ALLOCATOR_MESOS_HIERARCHICAL_HPP__

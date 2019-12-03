@@ -780,7 +780,8 @@ private:
   const Http http;
 
   SlaveInfo info;
-
+  DatacenterID datacenter_id;
+  
   protobuf::slave::Capabilities capabilities;
 
   // Resources that are checkpointed by the slave.

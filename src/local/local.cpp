@@ -74,7 +74,7 @@
 #include "master/master.hpp"
 #include "master/registrar.hpp"
 
-#include "master/allocator/mesos/hierarchical.hpp"
+#include "master/allocator/mesos/dummy.hpp"
 #include "master/allocator/mesos/sorter/drf/sorter.hpp"
 
 #include "master/contender/standalone.hpp"
@@ -113,7 +113,7 @@ using mesos::master::contender::StandaloneMasterContender;
 using mesos::master::detector::MasterDetector;
 using mesos::master::detector::StandaloneMasterDetector;
 
-using mesos::internal::master::allocator::HierarchicalDRFAllocator;
+using mesos::internal::master::allocator::DummyAllocator;
 
 using mesos::internal::master::Master;
 using mesos::internal::master::Registrar;
@@ -177,10 +177,10 @@ PID<Master> launch(const Flags& flags, Allocator* _allocator)
 
   if (_allocator == nullptr) {
     // Create a default allocator.
-    Try<Allocator*> defaultAllocator = HierarchicalDRFAllocator::create();
+    Try<Allocator*> defaultAllocator = DummyAllocator::create();
     if (defaultAllocator.isError()) {
       EXIT(EXIT_FAILURE)
-        << "Failed to create an instance of HierarchicalDRFAllocator: "
+        << "Failed to create an instance of DummyAllocator: "
         << defaultAllocator.error();
     }
 

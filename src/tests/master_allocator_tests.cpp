@@ -42,7 +42,7 @@
 #include "master/constants.hpp"
 #include "master/master.hpp"
 
-#include "master/allocator/mesos/hierarchical.hpp"
+#include "master/allocator/mesos/dummy.hpp"
 
 #include "master/detector/standalone.hpp"
 
@@ -55,7 +55,7 @@
 using google::protobuf::RepeatedPtrField;
 
 using mesos::allocator::Allocator;
-using mesos::internal::master::allocator::HierarchicalDRFAllocator;
+using mesos::internal::master::allocator::DummyAllocator;
 
 using mesos::internal::master::Master;
 
@@ -147,7 +147,7 @@ const ::testing::Matcher<const vector<Offer>&> OfferEq(int cpus, int mem)
 template <typename T>
 class MasterAllocatorTest : public MesosTest {};
 
-typedef ::testing::Types<HierarchicalDRFAllocator,
+typedef ::testing::Types<DummyAllocator,
                          tests::Module<Allocator, TestDRFAllocator>>
   AllocatorTypes;
 

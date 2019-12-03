@@ -38,10 +38,12 @@ namespace allocator {
 namespace internal {
 
 // Forward declarations.
-class HierarchicalAllocatorProcess;
+//class HierarchicalAllocatorProcess;
+class DummyAllocatorProcess;
 
 // Collection of metrics for the allocator; these begin
 // with the following prefix: `allocator/mesos/`.
+/*
 struct Metrics
 {
   explicit Metrics(const HierarchicalAllocatorProcess& allocator);
@@ -54,7 +56,6 @@ struct Metrics
   void removeRole(const std::string& role);
 
   const process::PID<HierarchicalAllocatorProcess> allocator;
-
   // Number of dispatch events currently waiting in the allocator process.
   process::metrics::PullGauge event_queue_dispatches;
 
@@ -75,6 +76,58 @@ struct Metrics
   // PullGauges for the total amount of each resource in the cluster.
   std::vector<process::metrics::PullGauge> resources_total;
 
+  // PullGauges for the allocated amount of each resource in the cluster.
+  std::vector<process::metrics::PullGauge> resources_offered_or_allocated;
+
+  // PullGauges for the per-role quota allocation for each resource.
+  hashmap<std::string, hashmap<std::string, process::metrics::PullGauge>>
+    quota_allocated;
+
+  // PushGauges for the per-role quota guarantee for each resource.
+  hashmap<std::string, hashmap<std::string, process::metrics::PushGauge>>
+    quota_guarantee;
+
+  // PushGauges for the per-role quota limit for each resource.
+  hashmap<std::string, hashmap<std::string, process::metrics::PushGauge>>
+    quota_limit;
+
+  // PullGauges for the per-role count of active offer filters.
+  hashmap<std::string, process::metrics::PullGauge> offer_filters_active;
+};
+
+*/
+struct Metrics 
+{
+  explicit Metrics(const DummyAllocatorProcess& allocator);
+
+  ~Metrics();
+
+  void updateQuota(const std::string& role, const Quota& quota);
+
+  void addRole(const std::string& role);
+  void removeRole(const std::string& role);
+
+  const process::PID<DummyAllocatorProcess> allocator;
+
+  // Number of dispatch events currently waiting in the allocator process.
+  process::metrics::PullGauge event_queue_dispatches;
+
+  // TODO(bbannier) This metric is identical to `event_queue_dispatches`, but
+  // uses a name deprecated in 1.0. This metric should be removed after the
+  // deprecation cycle.
+  process::metrics::PullGauge event_queue_dispatches_;
+
+  // Number of times the allocation algorithm has run.
+  process::metrics::Counter allocation_runs;
+
+  // Time spent in the allocation algorithm.
+  process::metrics::Timer<Milliseconds> allocation_run;
+
+  // The latency of allocation runs due to the batching of allocation requests.
+  process::metrics::Timer<Milliseconds> allocation_run_latency;
+
+  // PullGauges for the total amount of each resource in the cluster.
+  std::vector<process::metrics::PullGauge> resources_total;
   // PullGauges for the allocated amount of each resource in the cluster.
   std::vector<process::metrics::PullGauge> resources_offered_or_allocated;
 

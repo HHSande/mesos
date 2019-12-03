@@ -81,7 +81,7 @@
 #include "master/master.hpp"
 #include "master/registrar.hpp"
 
-#include "master/allocator/mesos/hierarchical.hpp"
+#include "master/allocator/mesos/dummy.hpp"
 
 #include "master/contender/standalone.hpp"
 #include "master/contender/zookeeper.hpp"
@@ -137,11 +137,11 @@ Try<process::Owned<Master>> Master::start(
   // If the allocator is not provided, create a default one.
   if (allocator.isNone()) {
     Try<mesos::allocator::Allocator*> _allocator =
-      master::allocator::HierarchicalDRFAllocator::create();
+      master::allocator::DummyAllocator::create();
 
     if (_allocator.isError()) {
       return Error(
-          "Failed to create an instance of HierarchicalDRFAllocator: " +
+          "Failed to create an instance of DummyAllocator: " +
           _allocator.error());
     }
 

@@ -72,7 +72,7 @@
 #include "master/master.hpp"
 #include "master/registrar.hpp"
 
-#include "master/allocator/mesos/hierarchical.hpp"
+#include "master/allocator/mesos/dummy.hpp"
 
 #include "master/detector/standalone.hpp"
 

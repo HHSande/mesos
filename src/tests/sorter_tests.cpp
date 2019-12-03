@@ -30,7 +30,7 @@
 #include "master/allocator/mesos/sorter/random/sorter.hpp"
 #include "master/allocator/mesos/sorter/random/utils.hpp"
 
-#include "master/allocator/mesos/hierarchical.hpp"
+#include "master/allocator/mesos/dummy.hpp"
 
 #include "tests/allocator.hpp"
 #include "tests/mesos.hpp"
@@ -38,6 +38,7 @@
 
 using mesos::internal::master::allocator::DRFSorter;
 using mesos::internal::master::allocator::RandomSorter;
+
 
 using mesos::internal::master::allocator::internal::RoleTree;
 

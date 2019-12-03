@@ -1308,7 +1308,7 @@ master/allocator/libmesos_no_3rdparty_la-allocator.lo: \
  ../../include/mesos/module/allocator.hpp ../../include/mesos/module.hpp \
  ../../src/master/constants.hpp \
  ../../3rdparty/stout/include/stout/version.hpp \
- ../../src/master/allocator/mesos/hierarchical.hpp \
+ ../../src/master/allocator/mesos/dummy.hpp \
  ../../3rdparty/libprocess/include/process/id.hpp \
  ../../3rdparty/stout/include/stout/boundedhashmap.hpp \
  ../../src/common/protobuf_utils.hpp \
@@ -4163,7 +4163,7 @@ master/allocator/libmesos_no_3rdparty_la-allocator.lo: \
 
 ../../3rdparty/stout/include/stout/version.hpp:
 
-../../src/master/allocator/mesos/hierarchical.hpp:
+../../src/master/allocator/mesos/dummy.hpp:
 
 ../../3rdparty/libprocess/include/process/id.hpp:
 

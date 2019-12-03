@@ -3466,6 +3466,8 @@ void Master::resourceRequest(
 
     return;
   }
+  
+  //LOG(INFO) << "RESOURCE REQUEST DATACENTERId" << datacenterId.value();
 
   scheduler::Call::Request call;
   foreach (const Request& request, requests) {
@@ -4431,7 +4433,11 @@ void Master::accept(
 
   Slave* slave = slaves.registered.get(slaveId);
   CHECK(slave != nullptr) << slaveId;
+  for(int i = 0; i < existingOffer->resources_size(); i++){
 
+    LOG(INFO) << "EXISTING OFFERS YEYE : " << existingOffer->resources(i);
+  }
+  
   // Validate and upgrade all of the resources in `accept.operations`:
   //
   // For an operation except LAUNCH and LAUNCH_GROUP which contains invalid
@@ -7323,6 +7329,7 @@ void Master::__registerSlave(
 
   ++metrics->slave_registrations;
 
+  LOG(INFO) << "LA TIL SLAVE NÅ!! ER I MASTER";
   addSlave(slave, {});
 
   Duration pingTimeout =
@@ -7960,6 +7967,11 @@ void Master::__reregisterSlave(
   // already passed validation.
   LOG(INFO) << "Re-registered agent " << *slave
             << " with " << Resources(slave->info.resources());
+
+  for(int i = 0; i < slave->info.resources_size(); i++){
+
+    LOG(INFO) << "REREGISTER DATACENTERID:  : " << slave->info.resources(i);
+  }
 
   // Any framework that is completed at the master but still running
   // at the slave is shutdown. This can occur if the framework was
@@ -12682,6 +12694,7 @@ void Master::_removeOffer(Framework* framework, Offer* offer)
 
   // Delete it.
   LOG(INFO) << "Removing offer " << offer->id();
+
   offers.erase(offer->id());
   delete offer;
 }

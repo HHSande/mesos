@@ -1372,11 +1372,13 @@ examples/libdummyallocator_la-dummymodule.lo: \
  ../../3rdparty/libprocess/include/process/metrics/pull_gauge.hpp \
  ../../3rdparty/libprocess/include/process/metrics/push_gauge.hpp \
  ../../3rdparty/libprocess/include/process/metrics/timer.hpp \
+ ../../src/master/allocator/mesos/sorter/drf/sorter.hpp \
+ ../../src/master/allocator/mesos/sorter/drf/metrics.hpp \
+ ../../src/master/allocator/mesos/sorter/sorter.hpp \
  ../../src/master/allocator/mesos/sorter/random/sorter.hpp \
  /usr/include/c++/7/random /usr/include/c++/7/bits/random.h \
  /usr/include/x86_64-linux-gnu/c++/7/bits/opt_random.h \
- /usr/include/c++/7/bits/random.tcc \
- ../../src/master/allocator/mesos/sorter/sorter.hpp
+ /usr/include/c++/7/bits/random.tcc
 
 /usr/include/stdc-predef.h:
 
@@ -4292,6 +4294,12 @@ messages/messages.pb.h:
 
 ../../3rdparty/libprocess/include/process/metrics/timer.hpp:
 
+../../src/master/allocator/mesos/sorter/drf/sorter.hpp:
+
+../../src/master/allocator/mesos/sorter/drf/metrics.hpp:
+
+../../src/master/allocator/mesos/sorter/sorter.hpp:
+
 ../../src/master/allocator/mesos/sorter/random/sorter.hpp:
 
 /usr/include/c++/7/random:
@@ -4301,5 +4309,3 @@ messages/messages.pb.h:
 /usr/include/x86_64-linux-gnu/c++/7/bits/opt_random.h:
 
 /usr/include/c++/7/bits/random.tcc:
-
-../../src/master/allocator/mesos/sorter/sorter.hpp:

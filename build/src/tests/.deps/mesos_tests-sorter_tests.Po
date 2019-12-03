@@ -1349,7 +1349,7 @@ tests/mesos_tests-sorter_tests.o: ../../src/tests/sorter_tests.cpp \
  /usr/include/c++/7/bits/random.tcc \
  ../../3rdparty/stout/include/stout/hashset.hpp \
  ../../src/master/allocator/mesos/sorter/random/utils.hpp \
- ../../src/master/allocator/mesos/hierarchical.hpp \
+ ../../src/master/allocator/mesos/dummy.hpp \
  ../../3rdparty/libprocess/include/process/id.hpp \
  ../../3rdparty/stout/include/stout/boundedhashmap.hpp \
  ../../src/common/protobuf_utils.hpp \
@@ -4558,7 +4558,7 @@ tests/mesos_tests-sorter_tests.o: ../../src/tests/sorter_tests.cpp \
 
 ../../src/master/allocator/mesos/sorter/random/utils.hpp:
 
-../../src/master/allocator/mesos/hierarchical.hpp:
+../../src/master/allocator/mesos/dummy.hpp:
 
 ../../3rdparty/libprocess/include/process/id.hpp:
 

@@ -811,7 +811,7 @@ configure: failed program was:
 configure:21113: result: no
 configure:21011: checking whether pthreads work without any flags
 configure:21104: gcc -o conftest -g1 -O0 -Wno-unused-local-typedefs     conftest.c   >&5
-/tmp/ccTdEPoq.o: In function `main':
+/tmp/cce4W0Kg.o: In function `main':
 /home/hanshenriksande/Master/mesos/build/conftest.c:31: undefined reference to `pthread_create'
 /home/hanshenriksande/Master/mesos/build/conftest.c:32: undefined reference to `pthread_join'
 /home/hanshenriksande/Master/mesos/build/conftest.c:34: undefined reference to `__pthread_register_cancel'

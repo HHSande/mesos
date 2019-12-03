@@ -286,7 +286,10 @@ mesos::internal::slave::Flags::Flags()
       "automatically are not suitable for the work directory when running in\n"
       "production, since long-running agents could lose data when cleanup\n"
       "occurs. (Example: `/var/lib/mesos/agent`)");
-
+    add(&Flags::datacenterid,
+      "datacenterid",
+      "Id of datacenter\n"
+      "(Example: `--datacenterid=2`)");
   add(&Flags::runtime_dir,
       "runtime_dir",
       "Path of the agent runtime directory. This is where runtime data\n"

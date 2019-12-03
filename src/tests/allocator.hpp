@@ -25,7 +25,7 @@
 #include <process/gmock.hpp>
 #include <process/owned.hpp>
 
-#include "master/allocator/mesos/hierarchical.hpp"
+#include "master/allocator/mesos/dummy.hpp"
 
 using ::testing::_;
 using ::testing::An;
@@ -229,7 +229,7 @@ ACTION_P(InvokeResume, allocator)
 }
 
 
-template <typename T = master::allocator::HierarchicalDRFAllocator>
+template <typename T = master::allocator::DummyAllocator>
 mesos::allocator::Allocator* createAllocator()
 {
   // T represents the allocator type. It can be a default built-in
@@ -239,7 +239,7 @@ mesos::allocator::Allocator* createAllocator()
   return CHECK_NOTNULL(instance.get());
 }
 
-template <typename T = master::allocator::HierarchicalDRFAllocator>
+template <typename T = master::allocator::DummyAllocator>
 class TestAllocator : public mesos::allocator::Allocator
 {
 public:

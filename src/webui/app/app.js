@@ -40,6 +40,8 @@
           {templateUrl: 'app/offers/offers.html', controller: 'OffersCtrl'})
         .when('/roles',
           {templateUrl: 'app/roles/roles.html', controller: 'RolesCtrl'})
+        .when('/multicloud',
+          {templateUrl: 'app/roles/multicloud.html'})
 
         // TODO(tomxing): Remove the following '/slaves/*' paths once the
         // slave->agent rename is complete(MESOS-3779).

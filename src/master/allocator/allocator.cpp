@@ -20,14 +20,13 @@
 
 #include "master/constants.hpp"
 
-#include "master/allocator/mesos/hierarchical.hpp"
+#include "master/allocator/mesos/dummy.hpp"
 
 #include "module/manager.hpp"
 
 using std::string;
 
-using mesos::internal::master::allocator::HierarchicalDRFAllocator;
-using mesos::internal::master::allocator::HierarchicalRandomAllocator;
+using mesos::internal::master::allocator::DummyAllocator;
 
 namespace mesos {
 namespace allocator {
@@ -48,11 +47,11 @@ Try<Allocator*> Allocator::create(
   if (name == "HierarchicalDRF" ||
       name == mesos::internal::master::DEFAULT_ALLOCATOR) {
     if (roleSorter == "drf" && frameworkSorter == "drf") {
-      return HierarchicalDRFAllocator::create();
+      return DummyAllocator::create();
     }
 
     if (roleSorter == "random" && frameworkSorter == "random") {
-      return HierarchicalRandomAllocator::create();
+      return DummyAllocator::create();
     }
 
     return Error("Unsupported combination of 'role_sorter'"

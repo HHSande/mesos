@@ -50,6 +50,10 @@ message OfferID {
   required string value = 1;
 }
 
+message DatacenterID {
+  optional string value = 1;
+}
+
 
 /**
  * A unique ID assigned to an agent. Currently, an agent gets a new ID

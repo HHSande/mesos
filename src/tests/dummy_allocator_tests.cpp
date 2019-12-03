@@ -126,15 +126,15 @@ struct Deallocation
 };
 
 
-class HierarchicalAllocatorTestBase : public ::testing::Test
+class DummyAllocatorTestBase : public ::testing::Test
 {
 protected:
-  HierarchicalAllocatorTestBase()
+  DummyAllocatorTestBase()
     : allocator(createAllocator<DummyAllocator>()),
       nextSlaveId(1),
       nextFrameworkId(1) {}
 
-  ~HierarchicalAllocatorTestBase() override
+  ~DummyAllocatorTestBase() override
   {
     delete allocator;
   }
@@ -273,7 +273,7 @@ private:
 };
 
 
-class HierarchicalAllocatorTest : public HierarchicalAllocatorTestBase {};
+class DummyAllocatorTest : public DummyAllocatorTestBase {};
 
 
 // TODO(bmahler): These tests were transformed directly from
@@ -290,7 +290,7 @@ class HierarchicalAllocatorTest : public HierarchicalAllocatorTestBase {};
 // framework currently has the smallest share. Checking for proper DRF
 // logic when resources are returned, frameworks exit, etc. is handled
 // by SorterTest.DRFSorter.
-TEST_F(HierarchicalAllocatorTest, UnreservedDRF)
+TEST_F(DummyAllocatorTest, UnreservedDRF)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -443,7 +443,7 @@ TEST_F(HierarchicalAllocatorTest, UnreservedDRF)
 
 
 // This test ensures that reserved resources do affect the sharing across roles.
-TEST_F(HierarchicalAllocatorTest, ReservedDRF)
+TEST_F(DummyAllocatorTest, ReservedDRF)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -541,7 +541,7 @@ TEST_F(HierarchicalAllocatorTest, ReservedDRF)
 // framework currently has the smallest share. Checking for proper DRF
 // logic when resources are returned, frameworks exit, etc, is handled
 // by SorterTest.DRFSorter.
-TEST_F(HierarchicalAllocatorTest, DRFWithFairnessExclusion)
+TEST_F(DummyAllocatorTest, DRFWithFairnessExclusion)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -700,8 +700,8 @@ TEST_F(HierarchicalAllocatorTest, DRFWithFairnessExclusion)
 
 
 // This test checks allocator behavior when offering resources to
-// frameworks that register using nested ("hierarchical") roles.
-TEST_F(HierarchicalAllocatorTest, NestedRoleDRF)
+// frameworks that register using nested ("Dummy") roles.
+TEST_F(DummyAllocatorTest, NestedRoleDRF)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -817,7 +817,7 @@ TEST_F(HierarchicalAllocatorTest, NestedRoleDRF)
 
 // This test ensures that an offer filter larger than the
 // allocation interval effectively filters out resources.
-TEST_F(HierarchicalAllocatorTest, OfferFilter)
+TEST_F(DummyAllocatorTest, OfferFilter)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -905,7 +905,7 @@ TEST_F(HierarchicalAllocatorTest, OfferFilter)
 // (MESOS-3078), this test should still pass in that the small offer
 // filter timeout should lead to the next allocation for the agent
 // applying the filter.
-TEST_F(HierarchicalAllocatorTest, SmallOfferFilterTimeout)
+TEST_F(DummyAllocatorTest, SmallOfferFilterTimeout)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -1057,7 +1057,7 @@ TEST_F(HierarchicalAllocatorTest, SmallOfferFilterTimeout)
 // properly sent inverse offers after they have accepted or reserved resources.
 // It also verifies that the frameworks declined the offer should get no
 // inverse offers.
-TEST_F(HierarchicalAllocatorTest, MaintenanceInverseOffers)
+TEST_F(DummyAllocatorTest, MaintenanceInverseOffers)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -1152,7 +1152,7 @@ TEST_F(HierarchicalAllocatorTest, MaintenanceInverseOffers)
 // This test ensures that allocation is done per slave. This is done
 // by having 2 slaves and 2 frameworks and making sure each framework
 // gets only one slave's resources during an allocation.
-TEST_F(HierarchicalAllocatorTest, CoarseGrained)
+TEST_F(DummyAllocatorTest, CoarseGrained)
 {
   // Pausing the clock ensures that the batch allocation does not
   // influence this test.
@@ -1245,7 +1245,7 @@ TEST_F(HierarchicalAllocatorTest, CoarseGrained)
 // equal number of allocations over time (rather than the same
 // framework getting all the allocations because its name is
 // lexicographically ordered first).
-TEST_F(HierarchicalAllocatorTest, SameShareFairness)
+TEST_F(DummyAllocatorTest, SameShareFairness)
 {
   Clock::pause();
 
@@ -1296,14 +1296,14 @@ TEST_F(HierarchicalAllocatorTest, SameShareFairness)
 }
 
 
-class HierarchicalAllocatorTestWithReservations
-  : public HierarchicalAllocatorTestBase,
+class DummyAllocatorTestWithReservations
+  : public DummyAllocatorTestBase,
     public WithParamInterface<Resource::ReservationInfo::Type> {};
 
 
 INSTANTIATE_TEST_CASE_P(
     ReservationTypeSwitch,
-    HierarchicalAllocatorTestWithReservations,
+    DummyAllocatorTestWithReservations,
     testing::Values(
         Resource::ReservationInfo::DYNAMIC,
         Resource::ReservationInfo::STATIC));
@@ -1312,7 +1312,7 @@ INSTANTIATE_TEST_CASE_P(
 // This test verifies that the reservations should be
 // accounted towards the quota guarantee/limit even if
 // they are currently unallocated.
-TEST_P(HierarchicalAllocatorTestWithReservations, ReservationUnallocated)
+TEST_P(DummyAllocatorTestWithReservations, ReservationUnallocated)
 {
   Clock::pause();
 
@@ -1391,7 +1391,7 @@ TEST_P(HierarchicalAllocatorTestWithReservations, ReservationUnallocated)
 // This test verifies that the reservations should be
 // accounted towards the quota guarantee/limit if they
 // are currently allocated.
-TEST_P(HierarchicalAllocatorTestWithReservations, ReservationAllocated)
+TEST_P(DummyAllocatorTestWithReservations, ReservationAllocated)
 {
   Clock::pause();
 
@@ -1480,7 +1480,7 @@ TEST_P(HierarchicalAllocatorTestWithReservations, ReservationAllocated)
 
 // This test verifies that the non-quota role can get its reservation allocated
 // when it co-exists with roles with unsatisfied quota. See MESOS-8293.
-TEST_P(HierarchicalAllocatorTestWithReservations,
+TEST_P(DummyAllocatorTestWithReservations,
   NonQuotaRoleReservationWithQuotaRole)
 {
   Clock::pause();
@@ -1559,7 +1559,7 @@ TEST_P(HierarchicalAllocatorTestWithReservations,
 // This test verifies that when enforcing quota limit, shared resources
 // that are part of a role's reserved-allocated resources are only
 // charged once even when they are offered multiple times.
-TEST_P(HierarchicalAllocatorTestWithReservations,
+TEST_P(DummyAllocatorTestWithReservations,
   SharedAllocatedResourceQuotaAccounting)
 {
   // We test this by creating a quota for 100 disk resources.
@@ -1720,7 +1720,7 @@ TEST_P(HierarchicalAllocatorTestWithReservations,
 
 // This test ensures that reserving already allocated resources would not
 // affect quota allocation.
-TEST_F(HierarchicalAllocatorTest, QuotaAccountingReserveAllocatedResources)
+TEST_F(DummyAllocatorTest, QuotaAccountingReserveAllocatedResources)
 {
   Clock::pause();
   initialize();
@@ -1787,7 +1787,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaAccountingReserveAllocatedResources)
 
 // This test ensures that unreserving allocated resources would not affect
 // quota allocation.
-TEST_F(HierarchicalAllocatorTest, QuotaAccountingUnreserveAllocatedResources)
+TEST_F(DummyAllocatorTest, QuotaAccountingUnreserveAllocatedResources)
 {
   Clock::pause();
   initialize();
@@ -1862,7 +1862,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaAccountingUnreserveAllocatedResources)
 
 // Checks that resources on a slave that are statically reserved to
 // a role are only offered to frameworks in that role.
-TEST_F(HierarchicalAllocatorTest, Reservations)
+TEST_F(DummyAllocatorTest, Reservations)
 {
   Clock::pause();
 
@@ -1930,7 +1930,7 @@ TEST_F(HierarchicalAllocatorTest, Reservations)
 
 // This test verifies that quota headroom is correctly maintained when some
 // roles have more reservations than their quotas.
-TEST_P(HierarchicalAllocatorTestWithReservations,
+TEST_P(DummyAllocatorTestWithReservations,
   QuotaHeadroomWhenReservationsExceedQuota)
 {
   Clock::pause();
@@ -2021,7 +2021,7 @@ TEST_P(HierarchicalAllocatorTestWithReservations,
 
 
 // Checks that recovered resources are re-allocated correctly.
-TEST_F(HierarchicalAllocatorTest, RecoverResources)
+TEST_F(DummyAllocatorTest, RecoverResources)
 {
   Clock::pause();
 
@@ -2091,7 +2091,7 @@ TEST_F(HierarchicalAllocatorTest, RecoverResources)
 // Checks that resource provider resources can be added to an agent
 // and that the added used resources are correctly taken into account
 // when computing fair share.
-TEST_F(HierarchicalAllocatorTest, AddResourceProvider)
+TEST_F(DummyAllocatorTest, AddResourceProvider)
 {
   Clock::pause();
 
@@ -2174,7 +2174,7 @@ TEST_F(HierarchicalAllocatorTest, AddResourceProvider)
 
 // Check that even if as an overallocated resource provider is added to an
 // agent, new allocations are only made for unused agent resources.
-TEST_F(HierarchicalAllocatorTest, AddResourceProviderOverallocated)
+TEST_F(DummyAllocatorTest, AddResourceProviderOverallocated)
 {
   Clock::pause();
 
@@ -2223,7 +2223,7 @@ TEST_F(HierarchicalAllocatorTest, AddResourceProviderOverallocated)
 }
 
 
-TEST_F(HierarchicalAllocatorTest, Allocatable)
+TEST_F(DummyAllocatorTest, Allocatable)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -2321,7 +2321,7 @@ TEST_F(HierarchicalAllocatorTest, Allocatable)
 // allocatable resources can be updated in the allocator by checking that the
 // framework gets no offers with the default flags and only specify a limit
 // later on.
-TEST_F(HierarchicalAllocatorTest, FrameworkMinAllocatable)
+TEST_F(DummyAllocatorTest, FrameworkMinAllocatable)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -2387,7 +2387,7 @@ TEST_F(HierarchicalAllocatorTest, FrameworkMinAllocatable)
 // Check that a framework-specified empty set of minimum allocatable resource
 // requirements is interpreted as the framework accepting any resources
 // regardless of the global limit.
-TEST_F(HierarchicalAllocatorTest, FrameworkEmptyMinAllocatable)
+TEST_F(DummyAllocatorTest, FrameworkEmptyMinAllocatable)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -2398,7 +2398,7 @@ TEST_F(HierarchicalAllocatorTest, FrameworkEmptyMinAllocatable)
   flags.min_allocatable_resources = "cpus:0.01|mem:32";
 
   initialize(flags);
-
+  
   // Add a framework which specifies minimum allocatable resources
   // with an empty set of quantities.
   FrameworkInfo framework = createFrameworkInfo({"role1"});
@@ -2431,7 +2431,7 @@ TEST_F(HierarchicalAllocatorTest, FrameworkEmptyMinAllocatable)
 
 // This test ensures that frameworks can apply offer operations (e.g.,
 // creating persistent volumes) on their allocations.
-TEST_F(HierarchicalAllocatorTest, UpdateAllocation)
+TEST_F(DummyAllocatorTest, UpdateAllocation)
 {
   Clock::pause();
 
@@ -2506,7 +2506,7 @@ TEST_F(HierarchicalAllocatorTest, UpdateAllocation)
 
 // This test ensures that frameworks can apply resource conversions that remove
 // resources from their allocations and the agent's total resources.
-TEST_F(HierarchicalAllocatorTest, UpdateAllocationRemoveResources)
+TEST_F(DummyAllocatorTest, UpdateAllocationRemoveResources)
 {
   Clock::pause();
 
@@ -2577,7 +2577,7 @@ TEST_F(HierarchicalAllocatorTest, UpdateAllocationRemoveResources)
 
 // This test verifies that `updateAllocation()` supports creating and
 // destroying shared persistent volumes.
-TEST_F(HierarchicalAllocatorTest, UpdateAllocationSharedPersistentVolume)
+TEST_F(DummyAllocatorTest, UpdateAllocationSharedPersistentVolume)
 {
   Clock::pause();
 
@@ -2687,7 +2687,7 @@ TEST_F(HierarchicalAllocatorTest, UpdateAllocationSharedPersistentVolume)
 
 // Tests that shared resources are only offered to frameworks who have
 // opted in for SHARED_RESOURCES.
-TEST_F(HierarchicalAllocatorTest, SharedResourcesCapability)
+TEST_F(DummyAllocatorTest, SharedResourcesCapability)
 {
   Clock::pause();
 
@@ -2784,7 +2784,7 @@ TEST_F(HierarchicalAllocatorTest, SharedResourcesCapability)
 
 // This test ensures that a call to 'updateAvailable' succeeds when the
 // allocator has sufficient available resources.
-TEST_F(HierarchicalAllocatorTest, UpdateAvailableSuccess)
+TEST_F(DummyAllocatorTest, UpdateAvailableSuccess)
 {
   initialize();
 
@@ -2827,7 +2827,7 @@ TEST_F(HierarchicalAllocatorTest, UpdateAvailableSuccess)
 
 // This test ensures that a call to 'updateAvailable' fails when the
 // allocator has insufficient available resources.
-TEST_F(HierarchicalAllocatorTest, UpdateAvailableFail)
+TEST_F(DummyAllocatorTest, UpdateAvailableFail)
 {
   initialize();
 
@@ -2864,7 +2864,7 @@ TEST_F(HierarchicalAllocatorTest, UpdateAvailableFail)
 
 // This test ensures that when oversubscribed resources are updated
 // subsequent allocations properly account for that.
-TEST_F(HierarchicalAllocatorTest, UpdateSlaveOversubscribedResources)
+TEST_F(DummyAllocatorTest, UpdateSlaveOversubscribedResources)
 {
   // Pause clock to disable batch allocation.
   Clock::pause();
@@ -2934,7 +2934,7 @@ TEST_F(HierarchicalAllocatorTest, UpdateSlaveOversubscribedResources)
 // check that we can expand and shrink the resources available on an
 // agent. Agents can be overallocated, meaning the amount of allocated
 // resources can exceed the total available resources.
-TEST_F(HierarchicalAllocatorTest, UpdateSlaveTotalResources)
+TEST_F(DummyAllocatorTest, UpdateSlaveTotalResources)
 {
   // Pause clock to disable batch allocation.
   Clock::pause();
@@ -3020,7 +3020,7 @@ TEST_F(HierarchicalAllocatorTest, UpdateSlaveTotalResources)
 
 // This test ensures that when agent capabilities are updated
 // subsequent allocations properly account for that.
-TEST_F(HierarchicalAllocatorTest, UpdateSlaveCapabilities)
+TEST_F(DummyAllocatorTest, UpdateSlaveCapabilities)
 {
   // Pause clock to disable batch allocation.
   Clock::pause();
@@ -3072,7 +3072,7 @@ TEST_F(HierarchicalAllocatorTest, UpdateSlaveCapabilities)
 // those resources to other frameworks (previously, the loop
 // exited incorrectly in this case). This is done through the
 // RESERVATION_REFINEMENT capability.
-TEST_F(HierarchicalAllocatorTest, FrameworkLoopMESOS_9554)
+TEST_F(DummyAllocatorTest, FrameworkLoopMESOS_9554)
 {
   // Pause clock to disable batch allocation.
   Clock::pause();
@@ -3156,7 +3156,7 @@ TEST_F(HierarchicalAllocatorTest, FrameworkLoopMESOS_9554)
 // This is a regression test for MESOS-9555 that ensures that
 // the tracking of non-scalar reservations across agents does
 // not lead to a CHECK failure.
-TEST_F(HierarchicalAllocatorTest, NonScalarReservationTrackingMESOS_9555)
+TEST_F(DummyAllocatorTest, NonScalarReservationTrackingMESOS_9555)
 {
   // Pause clock to disable batch allocation.
   Clock::pause();
@@ -3196,7 +3196,7 @@ TEST_F(HierarchicalAllocatorTest, NonScalarReservationTrackingMESOS_9555)
 
 // This test verifies that a framework that has not opted in for
 // revocable resources do not get allocated oversubscribed resources.
-TEST_F(HierarchicalAllocatorTest, OversubscribedNotAllocated)
+TEST_F(DummyAllocatorTest, OversubscribedNotAllocated)
 {
   // Pause clock to disable batch allocation.
   Clock::pause();
@@ -3238,7 +3238,7 @@ TEST_F(HierarchicalAllocatorTest, OversubscribedNotAllocated)
 
 // This test verifies that when oversubscribed resources are partially
 // recovered subsequent allocation properly accounts for that.
-TEST_F(HierarchicalAllocatorTest, RecoverOversubscribedResources)
+TEST_F(DummyAllocatorTest, RecoverOversubscribedResources)
 {
   // Pause clock to disable batch allocation.
   Clock::pause();
@@ -3300,7 +3300,7 @@ TEST_F(HierarchicalAllocatorTest, RecoverOversubscribedResources)
 // Checks that a slave that is not whitelisted will not have its
 // resources get offered, and that if the whitelist is updated so
 // that it is whitelisted, its resources will then be offered.
-TEST_F(HierarchicalAllocatorTest, Whitelist)
+TEST_F(DummyAllocatorTest, Whitelist)
 {
   Clock::pause();
 
@@ -3352,7 +3352,7 @@ TEST_F(HierarchicalAllocatorTest, Whitelist)
 // with identical allocations, but we update the allocator in different order
 // for each framework. We expect the fair shares of the frameworks to be
 // identical, which we implicitly check by subsequent allocations.
-TEST_F_TEMP_DISABLED_ON_WINDOWS(HierarchicalAllocatorTest, NoDoubleAccounting)
+TEST_F_TEMP_DISABLED_ON_WINDOWS(DummyAllocatorTest, NoDoubleAccounting)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -3429,7 +3429,7 @@ TEST_F_TEMP_DISABLED_ON_WINDOWS(HierarchicalAllocatorTest, NoDoubleAccounting)
 }
 
 
-// The quota tests that are specific to the built-in Hierarchical DRF
+// The quota tests that are specific to the built-in Dummy DRF
 // allocator (i.e. the way quota is satisfied) are in this file.
 
 // TODO(alexr): Additional tests we may want to implement:
@@ -3452,7 +3452,7 @@ TEST_F_TEMP_DISABLED_ON_WINDOWS(HierarchicalAllocatorTest, NoDoubleAccounting)
 // the quota'ed role declines offers, some resources are laid away for
 // the role, so that a greedy framework from a non-quota'ed role cannot
 // eat up all free resources.
-TEST_F(HierarchicalAllocatorTest, QuotaProvidesGuarantee)
+TEST_F(DummyAllocatorTest, QuotaProvidesGuarantee)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -3580,7 +3580,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaProvidesGuarantee)
 
 // When a role has limits set, its frameworks allocations are restricted based
 // on its quota limits.
-TEST_F(HierarchicalAllocatorTest, QuotaProvidesLimit)
+TEST_F(DummyAllocatorTest, QuotaProvidesLimit)
 {
   Clock::pause();
 
@@ -3672,7 +3672,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaProvidesLimit)
 
 // If quota is removed, fair sharing should be restored in the cluster
 // after sufficient number of tasks finish.
-TEST_F(HierarchicalAllocatorTest, RemoveQuota)
+TEST_F(DummyAllocatorTest, RemoveQuota)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -3772,7 +3772,7 @@ TEST_F(HierarchicalAllocatorTest, RemoveQuota)
 // be distributed fairly between them. However, inside the quota'ed role,
 // if one framework declines resources, there is no guarantee the other
 // framework in the same role does not consume all role's quota.
-TEST_F(HierarchicalAllocatorTest, MultipleFrameworksInRoleWithQuota)
+TEST_F(DummyAllocatorTest, MultipleFrameworksInRoleWithQuota)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -3907,7 +3907,7 @@ TEST_F(HierarchicalAllocatorTest, MultipleFrameworksInRoleWithQuota)
 
 // Quota allocations should be fine-grained. A role should get no more
 // resources than its quota even if the agent has more resources to offer.
-TEST_F(HierarchicalAllocatorTest, QuotaAllocationGranularity)
+TEST_F(DummyAllocatorTest, QuotaAllocationGranularity)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -3974,7 +3974,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaAllocationGranularity)
 // While quota allocation should be fine-grained, some resources are
 // unchoppable. They have to be offered entirely. This test verifies
 // one of the cases: disk resource of type MOUNT.
-TEST_F(HierarchicalAllocatorTest, QuotaAllocationGranularityUnchoppableResource)
+TEST_F(DummyAllocatorTest, QuotaAllocationGranularityUnchoppableResource)
 {
   Clock::pause();
   initialize();
@@ -4077,7 +4077,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaAllocationGranularityUnchoppableResource)
 
 // This test ensures that quota is satisfied in the presence of multiple
 // unreserved disk resources. This is a regression test for MESOS-9692.
-TEST_F(HierarchicalAllocatorTest, QuotaAllocationMultipleDisk)
+TEST_F(DummyAllocatorTest, QuotaAllocationMultipleDisk)
 {
   // The test sets a quota that contains 100 disk resources and
   // an agent with two kinds of disk resources: 50 vanilla disks
@@ -4133,7 +4133,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaAllocationMultipleDisk)
 // - It was allocated quota resources on the agent;
 //
 // - It can be allocated without violating the quota headroom.
-TEST_F(HierarchicalAllocatorTest, QuotaRoleAllocateNonQuotaResource)
+TEST_F(DummyAllocatorTest, QuotaRoleAllocateNonQuotaResource)
 {
   Clock::pause();
   initialize();
@@ -4248,7 +4248,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaRoleAllocateNonQuotaResource)
 // This test verifies, that the free pool (what is left after all quotas
 // are satisfied) is allocated according to the DRF algorithm across the roles
 // which do not have quota set.
-TEST_F_TEMP_DISABLED_ON_WINDOWS(HierarchicalAllocatorTest, DRFWithQuota)
+TEST_F_TEMP_DISABLED_ON_WINDOWS(DummyAllocatorTest, DRFWithQuota)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -4399,7 +4399,7 @@ TEST_F_TEMP_DISABLED_ON_WINDOWS(HierarchicalAllocatorTest, DRFWithQuota)
 // this behavior corresponds to the way DRF algorithm works, it might not be
 // desirable in some cases. Setting quota for a "starving" role can mitigate
 // the issue.
-TEST_F(HierarchicalAllocatorTest, QuotaAgainstStarvation)
+TEST_F(DummyAllocatorTest, QuotaAgainstStarvation)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -4520,7 +4520,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaAgainstStarvation)
 //
 // TODO(mzhu): Add a similar test but with only one agent. The test
 // will then verify the agent is "chopped" to maintain the quota headroom.
-TEST_F(HierarchicalAllocatorTest, QuotaAbsentFrameworkWholeAgent)
+TEST_F(DummyAllocatorTest, QuotaAbsentFrameworkWholeAgent)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -4604,7 +4604,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaAbsentFrameworkWholeAgent)
 //    from getting resources.
 //  * Resources are not laid away for quota'ed roles without frameworks if
 //    there are other quota'ed roles with not fully satisfied quota.
-TEST_F(HierarchicalAllocatorTest, MultiQuotaAbsentFrameworks)
+TEST_F(DummyAllocatorTest, MultiQuotaAbsentFrameworks)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -4652,7 +4652,7 @@ TEST_F(HierarchicalAllocatorTest, MultiQuotaAbsentFrameworks)
 // greater share but its quota is not fully satisfied yet. Though the first
 // role is considered before the second because it has smaller share, this
 // should not lead to starvation of the second role.
-TEST_F(HierarchicalAllocatorTest, MultiQuotaWithFrameworks)
+TEST_F(DummyAllocatorTest, MultiQuotaWithFrameworks)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -4744,7 +4744,7 @@ TEST_F(HierarchicalAllocatorTest, MultiQuotaWithFrameworks)
 
 
 // This tests that reserved resources are accounted for in the role's quota.
-TEST_F(HierarchicalAllocatorTest, ReservationWithinQuota)
+TEST_F(DummyAllocatorTest, ReservationWithinQuota)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -4822,7 +4822,7 @@ TEST_F(HierarchicalAllocatorTest, ReservationWithinQuota)
 // We setup a scenario with 8 CPUs, where role X has quota for 4 CPUs
 // and role Y has 4 CPUs reserved. All offers are declined; the 4
 // unreserved CPUs should not be offered to role Y.
-TEST_F(HierarchicalAllocatorTest, QuotaSetAsideReservedResources)
+TEST_F(DummyAllocatorTest, QuotaSetAsideReservedResources)
 {
   Clock::pause();
 
@@ -4938,7 +4938,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaSetAsideReservedResources)
 
 // This test checks that if a framework suppresses offers, disconnects and
 // reconnects again, it will start receiving resource offers again.
-TEST_F(HierarchicalAllocatorTest, DeactivateAndReactivateFramework)
+TEST_F(DummyAllocatorTest, DeactivateAndReactivateFramework)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -5003,7 +5003,7 @@ TEST_F(HierarchicalAllocatorTest, DeactivateAndReactivateFramework)
 
 
 // This test verifies that offer suppression and revival work as intended.
-TEST_F(HierarchicalAllocatorTest, SuppressAndReviveOffers)
+TEST_F(DummyAllocatorTest, SuppressAndReviveOffers)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -5074,7 +5074,7 @@ TEST_F(HierarchicalAllocatorTest, SuppressAndReviveOffers)
 
 // This test checks that total and allocator resources
 // are correctly reflected in the metrics endpoint.
-TEST_F_TEMP_DISABLED_ON_WINDOWS(HierarchicalAllocatorTest, ResourceMetrics)
+TEST_F_TEMP_DISABLED_ON_WINDOWS(DummyAllocatorTest, ResourceMetrics)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -5149,7 +5149,7 @@ TEST_F_TEMP_DISABLED_ON_WINDOWS(HierarchicalAllocatorTest, ResourceMetrics)
 
 // Ensures that guarantee and limit metrics are exposed
 // and updated correctly.
-TEST_F(HierarchicalAllocatorTest, QuotaMetrics)
+TEST_F(DummyAllocatorTest, QuotaMetrics)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -5213,11 +5213,11 @@ TEST_F(HierarchicalAllocatorTest, QuotaMetrics)
 
 // The allocator is not fully initialized until `allocator->initialize(...)`
 // is called (e.g., from `Master::initialize()` or
-// `HierarchicalAllocatorTestBase::initialize(...)`). This test
+// `DummyAllocatorTestBase::initialize(...)`). This test
 // verifies that metrics collection works but returns empty results
 // when the allocator is uninitialized. In reality this can happen if
 // the metrics endpoint is polled before the master is initialized.
-TEST_F(HierarchicalAllocatorTest, ResourceMetricsUninitialized)
+TEST_F(DummyAllocatorTest, ResourceMetricsUninitialized)
 {
   JSON::Value metrics = Metrics();
 
@@ -5239,7 +5239,7 @@ TEST_F(HierarchicalAllocatorTest, ResourceMetricsUninitialized)
 
 // This test checks that the number of times the allocation
 // algorithm has run is correctly reflected in the metric.
-TEST_F_TEMP_DISABLED_ON_WINDOWS(HierarchicalAllocatorTest, AllocationRunsMetric)
+TEST_F_TEMP_DISABLED_ON_WINDOWS(DummyAllocatorTest, AllocationRunsMetric)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -5293,7 +5293,7 @@ TEST_F_TEMP_DISABLED_ON_WINDOWS(HierarchicalAllocatorTest, AllocationRunsMetric)
 // This test checks that the allocation run timer
 // metrics are reported in the metrics endpoint.
 TEST_F_TEMP_DISABLED_ON_WINDOWS(
-    HierarchicalAllocatorTest,
+    DummyAllocatorTest,
     AllocationRunTimerMetrics)
 {
   Clock::pause();
@@ -5382,7 +5382,7 @@ TEST_F_TEMP_DISABLED_ON_WINDOWS(
 // TODO(xujyan): This test is structurally similar to
 // `AllocationRunTimerMetrics` above. Consider a refactor.
 TEST_F_TEMP_DISABLED_ON_WINDOWS(
-    HierarchicalAllocatorTest,
+    DummyAllocatorTest,
     AllocationRunLatencyMetrics)
 {
   Clock::pause();
@@ -5462,7 +5462,7 @@ TEST_F_TEMP_DISABLED_ON_WINDOWS(
 // This test checks that per-role active offer filter metrics
 // are correctly reported in the metrics endpoint.
 TEST_F_TEMP_DISABLED_ON_WINDOWS(
-    HierarchicalAllocatorTest,
+    DummyAllocatorTest,
     ActiveOfferFiltersMetrics)
 {
   // Pausing the clock is not necessary, but ensures that the test
@@ -5566,7 +5566,7 @@ TEST_F_TEMP_DISABLED_ON_WINDOWS(
 
 
 // Verifies that per-role dominant share metrics are correctly reported.
-TEST_F_TEMP_DISABLED_ON_WINDOWS(HierarchicalAllocatorTest, DominantShareMetrics)
+TEST_F_TEMP_DISABLED_ON_WINDOWS(DummyAllocatorTest, DominantShareMetrics)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -5678,7 +5678,7 @@ TEST_F_TEMP_DISABLED_ON_WINDOWS(HierarchicalAllocatorTest, DominantShareMetrics)
 // Verifies that per-role dominant share metrics are correctly
 // reported when resources are excluded from fair sharing.
 TEST_F_TEMP_DISABLED_ON_WINDOWS(
-    HierarchicalAllocatorTest,
+    DummyAllocatorTest,
     DominantShareMetricsWithFairnessExclusion)
 {
   // Pausing the clock is not necessary, but ensures that the test
@@ -5750,7 +5750,7 @@ TEST_F_TEMP_DISABLED_ON_WINDOWS(
 // This test ensures that resource allocation is done according to each role's
 // weight. This is done by having six agents and three frameworks and making
 // sure each framework gets the appropriate number of resources.
-TEST_F(HierarchicalAllocatorTest, UpdateWeight)
+TEST_F(DummyAllocatorTest, UpdateWeight)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -5973,7 +5973,7 @@ TEST_F(HierarchicalAllocatorTest, UpdateWeight)
 // This test checks that if a framework declines resources with a
 // long filter, it will be offered filtered resources again after
 // reviving offers.
-TEST_F(HierarchicalAllocatorTest, ReviveOffers)
+TEST_F(DummyAllocatorTest, ReviveOffers)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -6029,7 +6029,7 @@ TEST_F(HierarchicalAllocatorTest, ReviveOffers)
 // This test checks that if a multi-role framework declines resources
 // for one role with a long filter, it will be offered filtered resources
 // again to another role with some suppress and revive logic.
-TEST_F(HierarchicalAllocatorTest, SuppressAndReviveOffersWithMultiRole)
+TEST_F(DummyAllocatorTest, SuppressAndReviveOffersWithMultiRole)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -6105,7 +6105,7 @@ TEST_F(HierarchicalAllocatorTest, SuppressAndReviveOffersWithMultiRole)
 
 // This test ensures that resources from non-MULTI_ROLE should not be
 // allocated to MULTI_ROLE framework.
-TEST_F(HierarchicalAllocatorTest, DontOfferOldAgentToMultiRoleFramework)
+TEST_F(DummyAllocatorTest, DontOfferOldAgentToMultiRoleFramework)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -6142,7 +6142,7 @@ TEST_F(HierarchicalAllocatorTest, DontOfferOldAgentToMultiRoleFramework)
 //   Allocation: cpus:2;mem:1024
 //
 // Role will only get cpus resources in this case to meet its remaining qutoa.
-TEST_F(HierarchicalAllocatorTest, DisproportionateQuotaVsAllocation)
+TEST_F(DummyAllocatorTest, DisproportionateQuotaVsAllocation)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -6210,7 +6210,7 @@ TEST_F(HierarchicalAllocatorTest, DisproportionateQuotaVsAllocation)
 
 // This test ensures that resources reserved to ancestor roles can be offered
 // to their descendants.
-TEST_F(HierarchicalAllocatorTest, OfferAncestorReservationsToDescendantChild)
+TEST_F(DummyAllocatorTest, OfferAncestorReservationsToDescendantChild)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -6272,7 +6272,7 @@ TEST_F(HierarchicalAllocatorTest, OfferAncestorReservationsToDescendantChild)
 // reservations allocated to a child role are correctly considered
 // as an allocated reservation by the quota headroom calculation.
 // See MESOS-8604.
-TEST_F(HierarchicalAllocatorTest, QuotaWithAncestorReservations)
+TEST_F(DummyAllocatorTest, QuotaWithAncestorReservations)
 {
   Clock::pause();
 
@@ -6369,7 +6369,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaWithAncestorReservations)
 
 // This test verifies that a subrole's reservation is counted towards
 // parent's consumed quota. See MESOS-9688.
-TEST_F(HierarchicalAllocatorTest, QuotaWithNestedRoleReservation)
+TEST_F(DummyAllocatorTest, QuotaWithNestedRoleReservation)
 {
   // Setup:
   //   Roles: "a"   --> guarantee cpus:2;mem:200
@@ -6437,7 +6437,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaWithNestedRoleReservation)
 
 // This test ensures that nested role's allocation is accounted
 // to top-level role's consumed quota.
-TEST_F(HierarchicalAllocatorTest, QuotaWithNestedRoleAllocation)
+TEST_F(DummyAllocatorTest, QuotaWithNestedRoleAllocation)
 {
   // Setup:
   // agent1: R
@@ -6455,7 +6455,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaWithNestedRoleAllocation)
   // currently, subrole's allocations are not constrained by top-level
   // role's quota (though they are tracked post factum).
   //
-  // TODO(mzhu): Once we finish support for hierarchical quota, no allocation
+  // TODO(mzhu): Once we finish support for Dummy quota, no allocation
   // should be made since "a/b" will also be bound by the quota of "a".
 
   // --- SET UP ---
@@ -6515,7 +6515,7 @@ TEST_F(HierarchicalAllocatorTest, QuotaWithNestedRoleAllocation)
 
 // This test ensures that quota headroom is calculated correctly
 // in the presence of subrole's allocations.
-TEST_F(HierarchicalAllocatorTest, QuotaHeadroomWithNestedRoleAllocation)
+TEST_F(DummyAllocatorTest, QuotaHeadroomWithNestedRoleAllocation)
 {
   // Setup:
   //   agents: 2 * R
@@ -6613,9 +6613,9 @@ TEST_F(HierarchicalAllocatorTest, QuotaHeadroomWithNestedRoleAllocation)
 // This test checks that quota guarantees work as expected when a
 // nested role is created as a child of an existing quota'd role.
 //
-// TODO(bmahler): Re-enable this test once hierarchical quota is
+// TODO(bmahler): Re-enable this test once Dummy quota is
 // implemented.
-TEST_F(HierarchicalAllocatorTest, DISABLED_NestedRoleQuota)
+TEST_F(DummyAllocatorTest, DISABLED_NestedRoleQuota)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -6705,9 +6705,9 @@ TEST_F(HierarchicalAllocatorTest, DISABLED_NestedRoleQuota)
 // nested role is created as a child of an existing quota'd role, and
 // the parent role has been allocated resources.
 //
-// TODO(bmahler): Re-enable this test once hierarchical quota is
+// TODO(bmahler): Re-enable this test once Dummy quota is
 // implemented.
-TEST_F(HierarchicalAllocatorTest, DISABLED_NestedRoleQuotaAllocateToParent)
+TEST_F(DummyAllocatorTest, DISABLED_NestedRoleQuotaAllocateToParent)
 {
   // Pausing the clock is not necessary, but ensures that the test
   // doesn't rely on the batch allocation in the allocator, which
@@ -6803,7 +6803,7 @@ TEST_F(HierarchicalAllocatorTest, DISABLED_NestedRoleQuotaAllocateToParent)
 // the parent role as well.
 //
 // TODO(neilc): Re-enable this test when MESOS-7402 is fixed.
-TEST_F(HierarchicalAllocatorTest, DISABLED_NestedQuotaAccounting)
+TEST_F(DummyAllocatorTest, DISABLED_NestedQuotaAccounting)
 {
   Clock::pause();
 
@@ -6891,24 +6891,24 @@ TEST_F(HierarchicalAllocatorTest, DISABLED_NestedQuotaAccounting)
 }
 
 
-class HierarchicalAllocatorTestWithParam
-  : public HierarchicalAllocatorTestBase,
+class DummyAllocatorTestWithParam
+  : public DummyAllocatorTestBase,
     public WithParamInterface<bool> {};
 
 
-// The HierarchicalAllocatorTestWithParam tests are parameterized by a
+// The DummyAllocatorTestWithParam tests are parameterized by a
 // flag which indicates if quota is involved (true) or not (false).
 // TODO(anindya_sinha): Move over more allocator tests that make sense to run
 // both when the role is quota'ed and not.
 INSTANTIATE_TEST_CASE_P(
     QuotaSwitch,
-    HierarchicalAllocatorTestWithParam,
+    DummyAllocatorTestWithParam,
     ::testing::Bool());
 
 
 // Tests that shared resources are only offered to frameworks one by one.
 // Note that shared resources are offered even if they are in use.
-TEST_P(HierarchicalAllocatorTestWithParam, AllocateSharedResources)
+TEST_P(DummyAllocatorTestWithParam, AllocateSharedResources)
 {
   Clock::pause();
 
@@ -7034,14 +7034,14 @@ ostream& operator<<(ostream& stream, Sharedness type)
 }
 
 
-class HierarchicalAllocations_BENCHMARK_Test
-  : public HierarchicalAllocatorTestBase,
+class DummyAllocations_BENCHMARK_Test
+  : public DummyAllocatorTestBase,
     public WithParamInterface<std::tr1::tuple<size_t, size_t, Sharedness>> {};
 
 
 INSTANTIATE_TEST_CASE_P(
     AllResources,
-    HierarchicalAllocations_BENCHMARK_Test,
+    DummyAllocations_BENCHMARK_Test,
     ::testing::Combine(
       ::testing::Values(1000U, 5000U, 10000U, 20000U, 30000U, 50000U),
       ::testing::Values(1U, 50U, 100U, 200U, 500U, 1000U, 3000U, 6000U),
@@ -7054,7 +7054,7 @@ INSTANTIATE_TEST_CASE_P(
 
 // This benchmark simulates a number of frameworks that tests the allocation
 // times with various combinations of resources over all agents in a cluster.
-TEST_P(HierarchicalAllocations_BENCHMARK_Test, PersistentVolumes)
+TEST_P(DummyAllocations_BENCHMARK_Test, PersistentVolumes)
 {
   size_t agentCount = std::tr1::get<0>(GetParam());
   size_t frameworkCount = std::tr1::get<1>(GetParam());
@@ -7234,16 +7234,16 @@ TEST_P(HierarchicalAllocations_BENCHMARK_Test, PersistentVolumes)
 }
 
 
-class HierarchicalAllocator_BENCHMARK_Test
-  : public HierarchicalAllocatorTestBase,
+class DummyAllocator_BENCHMARK_Test
+  : public DummyAllocatorTestBase,
     public WithParamInterface<std::tuple<size_t, size_t>> {};
 
 
-// The Hierarchical Allocator benchmark tests are parameterized
+// The Dummy Allocator benchmark tests are parameterized
 // by the number of slaves.
 INSTANTIATE_TEST_CASE_P(
     SlaveAndFrameworkCount,
-    HierarchicalAllocator_BENCHMARK_Test,
+    DummyAllocator_BENCHMARK_Test,
     ::testing::Combine(
       ::testing::Values(1000U, 5000U, 10000U, 20000U, 30000U, 50000U),
       ::testing::Values(1U, 50U, 100U, 200U, 500U, 1000U, 3000U, 6000U))
@@ -7252,7 +7252,7 @@ INSTANTIATE_TEST_CASE_P(
 
 // TODO(bmahler): Should also measure how expensive it is to
 // add a framework after the slaves are added.
-TEST_P(HierarchicalAllocator_BENCHMARK_Test, AddAndUpdateSlave)
+TEST_P(DummyAllocator_BENCHMARK_Test, AddAndUpdateSlave)
 {
   size_t slaveCount = std::get<0>(GetParam());
   size_t frameworkCount = std::get<1>(GetParam());
@@ -7368,7 +7368,7 @@ TEST_P(HierarchicalAllocator_BENCHMARK_Test, AddAndUpdateSlave)
 // This benchmark simulates a number of frameworks that have a fixed amount of
 // work to do. Once they have reached their targets, they start declining all
 // subsequent offers.
-TEST_P(HierarchicalAllocator_BENCHMARK_Test, DeclineOffers)
+TEST_P(DummyAllocator_BENCHMARK_Test, DeclineOffers)
 {
   size_t slaveCount = std::get<0>(GetParam());
   size_t frameworkCount = std::get<1>(GetParam());
@@ -7524,7 +7524,7 @@ static Labels createLabels(
 
 
 // TODO(neilc): Refactor to reduce code duplication with `DeclineOffers` test.
-TEST_P(HierarchicalAllocator_BENCHMARK_Test, ResourceLabels)
+TEST_P(DummyAllocator_BENCHMARK_Test, ResourceLabels)
 {
   size_t slaveCount = std::get<0>(GetParam());
   size_t frameworkCount = std::get<1>(GetParam());
@@ -7704,7 +7704,7 @@ TEST_P(HierarchicalAllocator_BENCHMARK_Test, ResourceLabels)
 
 // This benchmark measures the effects of framework suppression
 // on allocation times.
-TEST_P(HierarchicalAllocator_BENCHMARK_Test, SuppressOffers)
+TEST_P(DummyAllocator_BENCHMARK_Test, SuppressOffers)
 {
   size_t agentCount = std::get<0>(GetParam());
   size_t frameworkCount = std::get<1>(GetParam());
@@ -7861,7 +7861,7 @@ TEST_P(HierarchicalAllocator_BENCHMARK_Test, SuppressOffers)
 
 // This benchmark measures allocator performance when almost all
 // frameworks are suppressed.
-TEST_P(HierarchicalAllocator_BENCHMARK_Test, ExtremeSuppressOffers)
+TEST_P(DummyAllocator_BENCHMARK_Test, ExtremeSuppressOffers)
 {
   size_t agentCount = std::get<0>(GetParam());
   size_t frameworkCount = std::get<1>(GetParam());
@@ -8013,7 +8013,7 @@ TEST_P(HierarchicalAllocator_BENCHMARK_Test, ExtremeSuppressOffers)
 // Measures the processing time required for the allocator metrics.
 //
 // TODO(bmahler): Add allocations to this benchmark.
-TEST_P(HierarchicalAllocator_BENCHMARK_Test, Metrics)
+TEST_P(DummyAllocator_BENCHMARK_Test, Metrics)
 {
   size_t slaveCount = std::get<0>(GetParam());
   size_t frameworkCount = std::get<1>(GetParam());
@@ -8092,7 +8092,7 @@ TEST_P(HierarchicalAllocator_BENCHMARK_Test, Metrics)
 
 // Tests that the `updateSlave()` function correctly removes all filters
 // for the specified slave when slave attributes are changed on restart.
-TEST_F(HierarchicalAllocatorTest, RemoveFilters)
+TEST_F(DummyAllocatorTest, RemoveFilters)
 {
   // We put both frameworks into the same role, but we could also
   // have had separate roles; this should not influence the test.
@@ -8163,7 +8163,7 @@ TEST_F(HierarchicalAllocatorTest, RemoveFilters)
 // This test uses `reviveOffers` to add allocation-triggering events
 // to the allocator queue in order to measure the impact of allocation
 // batching (MESOS-6904).
-TEST_P(HierarchicalAllocator_BENCHMARK_Test, AllocatorBacklog)
+TEST_P(DummyAllocator_BENCHMARK_Test, AllocatorBacklog)
 {
   size_t agentCount = std::get<0>(GetParam());
   size_t frameworkCount = std::get<1>(GetParam());

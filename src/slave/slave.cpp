@@ -264,9 +264,12 @@ void Slave::signaled(int signal, int uid)
 
 void Slave::initialize()
 {
+  datacenter_id.set_datacenter_id(flags.datacenterid);
+  //resources.set_datacenter_id(flags.datacenterid);
   LOG(INFO) << "Mesos agent started on " << string(self()).substr(5);
   LOG(INFO) << "Flags at startup: " << flags;
-
+  LOG(INFO) << "DatacenterID: " << flags.datacenterid;
+  LOG(INFO) << "DatacenterID: " << datacenter_id.datacenter_id();
   if (self().address.ip.isLoopback()) {
     LOG(WARNING) << "\n**************************************************\n"
                  << "Agent bound to loopback interface!"
@@ -601,18 +604,28 @@ void Slave::initialize()
   // Initialize slave info.
   info.set_hostname(hostname);
   info.set_port(self().address.port);
-
+  
+  //for(const Resource& resource : info.resources())
+  //info.resources().size;
   info.mutable_resources()->CopyFrom(resources.get());
   if (HookManager::hooksAvailable()) {
     info.mutable_resources()->CopyFrom(
         HookManager::slaveResourcesDecorator(info));
   }
 
+  for(int i = 0; i < info.resources_size(); i++){
+    auto* temp = info.mutable_resources(i)->mutable_datacenter_id();
+    temp->set_datacenter_id(flags.datacenterid);
+    LOG(INFO) << "SATTE RESOURCE SIN DATACENTERID TIL : " << flags.datacenterid; 
+  }
   // Initialize `totalResources` with `info.resources`, checkpointed
   // resources will be applied later during recovery.
   totalResources = info.resources();
-
+  LOG(INFO) << "RESOURCES SIZE: " << info.resources_size();
   LOG(INFO) << "Agent resources: " << info.resources();
+  for(int i = 0; i < info.resources_size(); i++){
+    LOG(INFO) << "Agent resources datacenterID: " << info.resources(i).datacenter_id().datacenter_id();
+  }
 
   info.mutable_attributes()->CopyFrom(attributes);
   if (HookManager::hooksAvailable()) {
@@ -8403,6 +8416,7 @@ UpdateSlaveMessage Slave::generateResourceProviderUpdate() const
   message.mutable_resource_version_uuid()->CopyFrom(resourceVersion);
   message.mutable_operations();
 
+
   foreachvalue (const Operation* operation, operations) {
     Result<ResourceProviderID> resourceProviderId =
       getResourceProviderId(operation->info());
@@ -11051,7 +11065,7 @@ map<string, string> executorEnvironment(
       environment[key] = value.as<JSON::String>().value;
     }
   }
-
+  
   // Set LIBPROCESS_PORT so that we bind to a random free port (since
   // this might have been set via --port option). We do this before
   // the environment variables below in case it is included.

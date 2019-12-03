@@ -69,6 +69,7 @@ public:
   std::string fetcher_cache_dir;
   Duration fetcher_stall_timeout;
   std::string work_dir;
+  std::string datacenterid;
   std::string runtime_dir;
   std::string launcher_dir;
   Option<std::string> hadoop_home;

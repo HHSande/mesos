@@ -29,7 +29,7 @@
 
 #include "master/master.hpp"
 
-#include "master/allocator/mesos/hierarchical.hpp"
+#include "master/allocator/mesos/dummy.hpp"
 
 #include "slave/slave.hpp"
 
@@ -282,7 +282,7 @@ TEST_F(ResourceOffersTest, ResourcesGetReofferedAfterTaskInfoError)
 
 TEST_F(ResourceOffersTest, Request)
 {
-  TestAllocator<master::allocator::HierarchicalDRFAllocator> allocator;
+  TestAllocator<master::allocator::DummyAllocator> allocator;
 
   EXPECT_CALL(allocator, initialize(_, _, _));
 

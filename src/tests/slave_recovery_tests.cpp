@@ -55,7 +55,7 @@
 
 #include "master/master.hpp"
 
-#include "master/allocator/mesos/hierarchical.hpp"
+#include "master/allocator/mesos/dummy.hpp"
 
 #include "master/detector/standalone.hpp"
 
@@ -3907,7 +3907,7 @@ TYPED_TEST(SlaveRecoveryTest, ReconcileShutdownFramework)
 // using an explicit executor.
 TYPED_TEST(SlaveRecoveryTest, ReconcileTasksMissingFromSlave)
 {
-  TestAllocator<master::allocator::HierarchicalDRFAllocator> allocator;
+  TestAllocator<master::allocator::DummyAllocator> allocator;
 
   EXPECT_CALL(allocator, initialize(_, _, _));
 

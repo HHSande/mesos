@@ -1,0 +1,3 @@
+repository='external project URL'
+module='/home/hanshenriksande/Master/mesos/3rdparty/csi-0.2.0.tar.gz'
+tag='SHA256=B013F844C1E309B03FE6BCE9F186FEFA8910FCFAE7F8E6F7E4ACBEC166692F92'

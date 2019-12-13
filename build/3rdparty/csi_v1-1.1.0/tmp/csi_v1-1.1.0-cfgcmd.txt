@@ -1,0 +1,1 @@
+cmd='/usr/bin/cmake;-E;make_directory;/home/hanshenriksande/Master/mesos/build/3rdparty/csi_v1-1.1.0/src/csi_v1-1.1.0/csi/v1;&&;/usr/bin/cmake;-E;rename;/home/hanshenriksande/Master/mesos/build/3rdparty/csi_v1-1.1.0/src/csi_v1-1.1.0/csi.proto;/home/hanshenriksande/Master/mesos/build/3rdparty/csi_v1-1.1.0/src/csi_v1-1.1.0/csi/v1/csi.proto'

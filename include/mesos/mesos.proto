@@ -958,7 +958,7 @@ message SlaveInfo {
 
   repeated Attribute attributes = 5;
   optional SlaveID id = 6;
-
+  optional DatacenterID datacenter_id = 17;
   // The domain that this slave belongs to. If the slave's region
   // differs from the master's region, it will not appear in resource
   // offers to frameworks that have not enabled the REGION_AWARE
@@ -1993,7 +1993,7 @@ message Offer {
   required FrameworkID framework_id = 2;
   required SlaveID slave_id = 3;
   required string hostname = 4;
-
+  optional DatacenterID datacenter_id = 16;
   // URL for reaching the slave running on the host.
   optional URL url = 8;
 

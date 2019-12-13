@@ -1423,7 +1423,13 @@ master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo: \
  ../../include/mesos/v1/maintenance/maintenance.hpp \
  ../../include/mesos/v1/scheduler/scheduler.hpp \
  ../include/mesos/v1/scheduler/scheduler.pb.h \
- ../../src/common/resources_utils.hpp
+ ../../src/common/resources_utils.hpp \
+ ../../src/master/allocator/mesos/affinity_propagation.hpp \
+ /usr/include/c++/7/fstream \
+ /usr/include/x86_64-linux-gnu/c++/7/bits/basic_file.h \
+ /usr/include/x86_64-linux-gnu/c++/7/bits/c++io.h \
+ /usr/include/c++/7/bits/fstream.tcc \
+ /home/hanshenriksande/Master/mesos/3rdparty/stout/include/stout/hashmap.hpp
 
 /usr/include/stdc-predef.h:
 
@@ -4460,3 +4466,15 @@ messages/messages.pb.h:
 ../include/mesos/v1/scheduler/scheduler.pb.h:
 
 ../../src/common/resources_utils.hpp:
+
+../../src/master/allocator/mesos/affinity_propagation.hpp:
+
+/usr/include/c++/7/fstream:
+
+/usr/include/x86_64-linux-gnu/c++/7/bits/basic_file.h:
+
+/usr/include/x86_64-linux-gnu/c++/7/bits/c++io.h:
+
+/usr/include/c++/7/bits/fstream.tcc:
+
+/home/hanshenriksande/Master/mesos/3rdparty/stout/include/stout/hashmap.hpp:

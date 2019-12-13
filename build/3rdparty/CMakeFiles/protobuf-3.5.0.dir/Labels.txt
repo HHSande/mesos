@@ -1,0 +1,13 @@
+# Target labels
+ protobuf-3.5.0
+# Source files and their labels
+/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/protobuf-3.5.0
+/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/protobuf-3.5.0.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/protobuf-3.5.0-complete.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/protobuf-3.5.0/src/protobuf-3.5.0-stamp/protobuf-3.5.0-install.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/protobuf-3.5.0/src/protobuf-3.5.0-stamp/protobuf-3.5.0-mkdir.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/protobuf-3.5.0/src/protobuf-3.5.0-stamp/protobuf-3.5.0-download.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/protobuf-3.5.0/src/protobuf-3.5.0-stamp/protobuf-3.5.0-update.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/protobuf-3.5.0/src/protobuf-3.5.0-stamp/protobuf-3.5.0-patch.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/protobuf-3.5.0/src/protobuf-3.5.0-stamp/protobuf-3.5.0-configure.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/protobuf-3.5.0/src/protobuf-3.5.0-stamp/protobuf-3.5.0-build.rule

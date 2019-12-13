@@ -713,6 +713,8 @@ am__libmesos_no_3rdparty_la_SOURCES_DIST = master/registry.proto \
 	master/allocator/mesos/allocator.hpp \
 	master/allocator/mesos/dummy.cpp \
 	master/allocator/mesos/dummy.hpp \
+	master/allocator/mesos/affinity_propagation.hpp \
+	master/allocator/mesos/affinity_propagation.hpp \
 	master/allocator/mesos/metrics.cpp \
 	master/allocator/mesos/metrics.hpp \
 	master/allocator/mesos/sorter/drf/metrics.cpp \
@@ -1115,6 +1117,7 @@ am_libmesos_no_3rdparty_la_OBJECTS =  \
 	logging/libmesos_no_3rdparty_la-logging.lo \
 	master/allocator/libmesos_no_3rdparty_la-allocator.lo \
 	master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo \
+	master/allocator/mesos/apCluster.lo \
 	master/allocator/mesos/libmesos_no_3rdparty_la-metrics.lo \
 	master/allocator/mesos/sorter/drf/libmesos_no_3rdparty_la-metrics.lo \
 	master/allocator/mesos/sorter/drf/libmesos_no_3rdparty_la-sorter.lo \
@@ -3228,6 +3231,8 @@ libmesos_no_3rdparty_la_SOURCES = master/registry.proto \
 	master/allocator/mesos/allocator.hpp \
 	master/allocator/mesos/dummy.cpp \
 	master/allocator/mesos/dummy.hpp \
+	master/allocator/mesos/affinity_propagation.cpp \
+	master/allocator/mesos/affinity_propagation.hpp \
 	master/allocator/mesos/metrics.cpp \
 	master/allocator/mesos/metrics.hpp \
 	master/allocator/mesos/sorter/drf/metrics.cpp \
@@ -4782,6 +4787,9 @@ master/allocator/mesos/$(am__dirstamp):
 master/allocator/mesos/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) master/allocator/mesos/$(DEPDIR)
 	@: > master/allocator/mesos/$(DEPDIR)/$(am__dirstamp)
+	master/allocator/mesos/apCluster.lo:  \
+	master/allocator/mesos/$(am__dirstamp) \
+	master/allocator/mesos/$(DEPDIR)/$(am__dirstamp)
 master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo:  \
 	master/allocator/mesos/$(am__dirstamp) \
 	master/allocator/mesos/$(DEPDIR)/$(am__dirstamp)
@@ -7360,6 +7368,7 @@ include examples/$(DEPDIR)/docker_no_executor_framework-docker_no_executor_frame
 include examples/$(DEPDIR)/dynamic_reservation_framework-dynamic_reservation_framework.Po
 include examples/$(DEPDIR)/inverse_offer_framework-inverse_offer_framework.Po
 include examples/$(DEPDIR)/libdummyallocator_la-dummymodule.Plo
+include examples/$(DEPDIR)/apCluster.Plo
 include examples/$(DEPDIR)/libexamplemodule_la-example_module_impl.Plo
 include examples/$(DEPDIR)/libtestallocator_la-test_allocator_module.Plo
 include examples/$(DEPDIR)/libtestanonymous_la-test_anonymous_module.Plo
@@ -7472,6 +7481,7 @@ include master/$(DEPDIR)/libmesos_no_3rdparty_la-weights_handler.Plo
 include master/$(DEPDIR)/mesos_master-main.Po
 include master/allocator/$(DEPDIR)/libmesos_no_3rdparty_la-allocator.Plo
 include master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-dummy.Plo
+include master/allocator/mesos/$(DEPDIR)/apCluster.Plo
 include master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-metrics.Plo
 include master/allocator/mesos/sorter/drf/$(DEPDIR)/libmesos_no_3rdparty_la-metrics.Plo
 include master/allocator/mesos/sorter/drf/$(DEPDIR)/libmesos_no_3rdparty_la-sorter.Plo
@@ -8529,6 +8539,13 @@ master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo: master/allocator/mesos/
 #	$(AM_V_CXX)source='master/allocator/mesos/dummy.cpp' object='master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmesos_no_3rdparty_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o master/allocator/mesos/libmesos_no_3rdparty_la-dummy.lo `test -f 'master/allocator/mesos/dummy.cpp' || echo '$(srcdir)/'`master/allocator/mesos/dummy.cpp
+
+master/allocator/mesos/apCluster.lo: master/allocator/mesos/affinity_propagation.cpp
+	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmesos_no_3rdparty_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT master/allocator/mesos/apCluster.lo -MD -MP -MF master/allocator/mesos/$(DEPDIR)/apCluster.Tpo -c -o master/allocator/mesos/apCluster.lo `test -f 'master/allocator/mesos/affinity_propagation.cpp' || echo '$(srcdir)/'`master/allocator/mesos/affinity_propagation.cpp
+	$(AM_V_at)$(am__mv) master/allocator/mesos/$(DEPDIR)/apCluster.Tpo master/allocator/mesos/$(DEPDIR)/apCluster.Plo
+#	$(AM_V_CXX)source='master/allocator/mesos/affinity_propagation.cpp' object='master/allocator/mesos/apCluster.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmesos_no_3rdparty_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o master/allocator/mesos/apCluster.lo `test -f 'master/allocator/mesos/affinity_propagation.cpp' || echo '$(srcdir)/'`master/allocator/mesos/affinity_propagation.cpp
 
 master/allocator/mesos/libmesos_no_3rdparty_la-metrics.lo: master/allocator/mesos/metrics.cpp
 	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libmesos_no_3rdparty_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT master/allocator/mesos/libmesos_no_3rdparty_la-metrics.lo -MD -MP -MF master/allocator/mesos/$(DEPDIR)/libmesos_no_3rdparty_la-metrics.Tpo -c -o master/allocator/mesos/libmesos_no_3rdparty_la-metrics.lo `test -f 'master/allocator/mesos/metrics.cpp' || echo '$(srcdir)/'`master/allocator/mesos/metrics.cpp

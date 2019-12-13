@@ -634,6 +634,8 @@ protected:
   bool initialized;
   bool paused;
   
+  hashmap<int, std::vector<int> > cluster;
+
   mesos::allocator::Options options;
    // Recovery data.
   Option<int> expectedAgentCount;

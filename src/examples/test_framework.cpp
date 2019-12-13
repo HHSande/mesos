@@ -55,7 +55,7 @@ using std::vector;
 
 using mesos::Resources;
 
-const int32_t CPUS_PER_TASK = 1;
+const int32_t CPUS_PER_TASK = 4;
 const int32_t MEM_PER_TASK = 128;
 
 constexpr char EXECUTOR_BINARY[] = "test-executor";

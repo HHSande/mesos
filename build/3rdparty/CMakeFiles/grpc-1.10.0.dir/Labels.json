@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/grpc-1.10.0"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/grpc-1.10.0.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/grpc-1.10.0-complete.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-install.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-mkdir.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-download.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-update.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-patch.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-configure.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"grpc-1.10.0"
+		],
+		"name" : "grpc-1.10.0"
+	}
+}

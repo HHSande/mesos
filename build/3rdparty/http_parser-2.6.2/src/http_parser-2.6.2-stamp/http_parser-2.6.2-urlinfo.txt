@@ -1,0 +1,3 @@
+repository='external project URL'
+module='/home/hanshenriksande/Master/mesos/3rdparty/http-parser-2.6.2.tar.gz'
+tag='SHA256=80FFFC3B64EF6968CECDD4B299A96986007DFF4BD12AE6C58CBCB506959B90AD'

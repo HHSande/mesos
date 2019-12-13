@@ -35,6 +35,7 @@
 #include "common/protobuf_utils.hpp"
 #include "common/resources_utils.hpp"
 
+#include "affinity_propagation.hpp"
 using std::make_shared;
 using std::set;
 using std::shared_ptr;
@@ -510,7 +511,13 @@ void DummyAllocatorProcess::initialize(
           .then([]() -> ControlFlow<Nothing> { return Continue(); });
       });
       
-  
+  cluster = apCluster();
+
+  foreachpair(const int& exemplar, const vector<int>& datacenterIds, cluster){
+    foreach(const int& id, datacenterIds){
+      LOG(INFO) << "Cluster ID: " << exemplar << " har ID i seg: " << id;
+    }
+  }
   LOG(INFO) << "Dummy Allocator Process initialized";
 }
 
@@ -615,6 +622,7 @@ void DummyAllocatorProcess::addFramework(
     // allocated to agents that have not yet been added, consider
     // CHECKing this case.
     if (!slaves.contains(slaveId)) {
+
       continue;
     }
 
@@ -803,6 +811,7 @@ void DummyAllocatorProcess::addSlave(
   CHECK_EQ(slaveId, slaveInfo.id());
   CHECK(!paused || expectedAgentCount.isSome());
 
+  LOG(INFO) << "TOTAL: " << total;
   slaves.insert({slaveId,
                  Slave(
                      slaveInfo,
@@ -874,6 +883,10 @@ void DummyAllocatorProcess::addSlave(
     << " with " << slave.getTotal()
     << " (offered or allocated: " << slave.getTotalOfferedOrAllocated() << ")";
 
+   for(int i = 0; i < slave.info.resources_size(); i++){
+    LOG(INFO) << "Agent resources datacenterID: " << slave.info.resources(i).datacenter_id().datacenter_id();
+    
+  }
   generateOffers(slaveId);
     LOG(INFO) << "Added agent " << slaveId;
 
@@ -1085,6 +1098,8 @@ void DummyAllocatorProcess::requestResources(
 {
  
   CHECK(initialized);
+  LOG(INFO) << "JEG OSOM HAR SURRA HELT MASSIVT???";
+
   LOG(INFO) << "Received resource request from framework " << frameworkId;
 }
 
@@ -1446,6 +1461,22 @@ void DummyAllocatorProcess::reviveRoles(
   foreach (const string& role, roles) {
     framework.offerFilters.erase(role);
   }
+
+  // Activating the framework in the sorter is fine as long as
+  // SUPPRESS is not parameterized. When parameterization is added,
+  // we may need to differentiate between the cases here.
+  foreach (const string& role, roles) {
+    Sorter* frameworkSorter = CHECK_NOTNONE(getFrameworkSorter(role));
+
+    frameworkSorter->activate(framework.frameworkId.value());
+    framework.suppressedRoles.erase(role);
+    framework.metrics->reviveRole(role);
+  }
+
+  // TODO(bmahler): This logs roles that were already unsuppressed,
+  // only log roles that transitioned from suppressed -> unsuppressed.
+  LOG(INFO) << "Unsuppressed offers and cleared filters for roles "
+            << stringify(roles) << " of framework " << framework.frameworkId;
 }
 
 void DummyAllocatorProcess::recoverResources(
@@ -1737,6 +1768,7 @@ Nothing DummyAllocatorProcess::_generateOffers()
   return Nothing();
 }
 
+//HER BLIR TILBUD OFFERED
 void DummyAllocatorProcess::__generateOffers()
 {
   // Compute the offerable resources, per framework:
@@ -1752,6 +1784,7 @@ void DummyAllocatorProcess::__generateOffers()
 
   vector<SlaveID> slaveIds;
   slaveIds.reserve(allocationCandidates.size());
+  vector<SlaveID> outsideDatacenter;
 
   // Filter out non-whitelisted, removed, and deactivated slaves
   // in order not to send offers for them.
@@ -1759,8 +1792,18 @@ void DummyAllocatorProcess::__generateOffers()
     Option<Slave*> slave = getSlave(slaveId);
 
     if (isWhitelisted(slaveId) && slave.isSome() && (*slave)->activated) {
-      slaveIds.push_back(slaveId);
+      if((*slave)->info.resources(0).datacenter_id().datacenter_id().compare("5") == 0){
+        //LOG(INFO) << "LA TIL RIKTIG SLAVE FORRERST" << (*slave)->info.resources(0).datacenter_id().datacenter_id();
+        slaveIds.push_back(slaveId);
+      }else{
+        //LOG(INFO) << "SLAVE UTENFOR DATACENTER";
+        outsideDatacenter.push_back(slaveId);
+      }
+      //slaveIds.push_back(slaveId);
     }
+  }
+  foreach (const SlaveID& slaveId, outsideDatacenter){
+    slaveIds.push_back(slaveId);
   }
 
   // Randomize the order in which slaves' resources are allocated.
@@ -2165,8 +2208,41 @@ void DummyAllocatorProcess::__generateOffers()
   // stage, which tends to allocate from the front of the agent list more
   // so than the back.
   std::random_shuffle(slaveIds.begin(), slaveIds.end());
+  vector<SlaveID> slavesWithinDatacenter;
+  vector<SlaveID> slavesInOtherDatacenter;
 
-  foreach (const SlaveID& slaveId, slaveIds) {
+  //Check if there are any slaves within the same datacenter as the MASTER
+  //TODO: Add datacenterID to slave to make it easier to filter?
+  foreach(const SlaveID& slaveId, slaveIds){
+        
+        Slave& slave = *CHECK_NOTNONE(getSlave(slaveId));
+
+        for(int i = 0; i < slave.info.resources_size(); i++){
+              
+              //LOG(INFO) << "Slave in datacenter: : " << slave.info.resources(i).datacenter_id().datacenter_id();
+
+              //For the time being, datacenterID 5 is where the master also is running. 
+
+              if(slave.info.resources(i).datacenter_id().datacenter_id().compare("5") == 0){
+                //LOG(INFO) << "Same datacenter as master";
+                slavesWithinDatacenter.push_back(slaveId);
+                break;
+              }else{
+                //LOG(INFO) << "NOT same datacenter as master";
+                slavesInOtherDatacenter.push_back(slaveId);
+                break;
+              }
+        }
+       // LOG(INFO) << "ENNÅ I LOOP";
+
+  }
+
+  foreach(const SlaveID& slaveId, slavesInOtherDatacenter){
+    slavesWithinDatacenter.push_back(slaveId);
+  }
+
+  foreach (const SlaveID& slaveId, slavesWithinDatacenter) {
+    //LOG(INFO) << "SLAVEID VI FØRST SENDER FRA: " << slaveId;
     Slave& slave = *CHECK_NOTNONE(getSlave(slaveId));
 
     foreach (const string& role, roleSorter->sort()) {
@@ -2260,13 +2336,17 @@ void DummyAllocatorProcess::__generateOffers()
           continue;
         }
 
-        VLOG(2) << "Offering " << toOffer << " on agent " << slaveId
+        LOG(INFO) << "Offering " << toOffer << " on agent " << slaveId
                 << " to role " << role << " of framework " << frameworkId;
 
         toOffer.allocate(role);
 
         offerable[frameworkId][role][slaveId] += toOffer;
         offeredSharedResources[slaveId] += toOffer.shared();
+        Slave& slave = *CHECK_NOTNONE(getSlave(slaveId));
+        for(int i = 0; i < slave.info.resources_size(); i++){
+              //LOG(INFO) << "TEST: " << slave.info.resources(i).datacenter_id().datacenter_id();
+        }
 
         // Update role consumed quota and quota headroom
 

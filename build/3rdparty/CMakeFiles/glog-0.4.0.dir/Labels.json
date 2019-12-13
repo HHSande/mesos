@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/glog-0.4.0"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/glog-0.4.0.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/glog-0.4.0-complete.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/glog-0.4.0/src/glog-0.4.0-stamp/glog-0.4.0-install.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/glog-0.4.0/src/glog-0.4.0-stamp/glog-0.4.0-mkdir.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/glog-0.4.0/src/glog-0.4.0-stamp/glog-0.4.0-download.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/glog-0.4.0/src/glog-0.4.0-stamp/glog-0.4.0-update.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/glog-0.4.0/src/glog-0.4.0-stamp/glog-0.4.0-patch.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/glog-0.4.0/src/glog-0.4.0-stamp/glog-0.4.0-configure.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/glog-0.4.0/src/glog-0.4.0-stamp/glog-0.4.0-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"glog-0.4.0"
+		],
+		"name" : "glog-0.4.0"
+	}
+}

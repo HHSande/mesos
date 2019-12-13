@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/libarchive-3.3.2"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/libarchive-3.3.2.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/libarchive-3.3.2-complete.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/libarchive-3.3.2/src/libarchive-3.3.2-stamp/libarchive-3.3.2-install.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/libarchive-3.3.2/src/libarchive-3.3.2-stamp/libarchive-3.3.2-mkdir.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/libarchive-3.3.2/src/libarchive-3.3.2-stamp/libarchive-3.3.2-download.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/libarchive-3.3.2/src/libarchive-3.3.2-stamp/libarchive-3.3.2-update.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/libarchive-3.3.2/src/libarchive-3.3.2-stamp/libarchive-3.3.2-patch.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/libarchive-3.3.2/src/libarchive-3.3.2-stamp/libarchive-3.3.2-configure.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/libarchive-3.3.2/src/libarchive-3.3.2-stamp/libarchive-3.3.2-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"libarchive-3.3.2"
+		],
+		"name" : "libarchive-3.3.2"
+	}
+}

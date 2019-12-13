@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/zookeeper-3.4.8"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/zookeeper-3.4.8.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/zookeeper-3.4.8-complete.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/zookeeper-3.4.8/src/zookeeper-3.4.8-stamp/zookeeper-3.4.8-install.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/zookeeper-3.4.8/src/zookeeper-3.4.8-stamp/zookeeper-3.4.8-mkdir.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/zookeeper-3.4.8/src/zookeeper-3.4.8-stamp/zookeeper-3.4.8-download.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/zookeeper-3.4.8/src/zookeeper-3.4.8-stamp/zookeeper-3.4.8-update.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/zookeeper-3.4.8/src/zookeeper-3.4.8-stamp/zookeeper-3.4.8-patch.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/zookeeper-3.4.8/src/zookeeper-3.4.8-stamp/zookeeper-3.4.8-configure.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/zookeeper-3.4.8/src/zookeeper-3.4.8-stamp/zookeeper-3.4.8-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"zookeeper-3.4.8"
+		],
+		"name" : "zookeeper-3.4.8"
+	}
+}

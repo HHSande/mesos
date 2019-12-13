@@ -3467,7 +3467,14 @@ void Master::resourceRequest(
     return;
   }
   
-  //LOG(INFO) << "RESOURCE REQUEST DATACENTERId" << datacenterId.value();
+  for(auto const& value: requests) {
+    for(int i = 0; i < value.resources_size(); i++){
+      LOG(INFO) << "RESOURCE REQUEST DATACENTER ID: " << value.resources(i).datacenter_id().datacenter_id();
+    }
+  }
+
+  LOG(INFO) << "KOM HIT?!?!";
+  
 
   scheduler::Call::Request call;
   foreach (const Request& request, requests) {
@@ -4433,11 +4440,12 @@ void Master::accept(
 
   Slave* slave = slaves.registered.get(slaveId);
   CHECK(slave != nullptr) << slaveId;
+  /*
   for(int i = 0; i < existingOffer->resources_size(); i++){
 
     LOG(INFO) << "EXISTING OFFERS YEYE : " << existingOffer->resources(i);
   }
-  
+  */
   // Validate and upgrade all of the resources in `accept.operations`:
   //
   // For an operation except LAUNCH and LAUNCH_GROUP which contains invalid
@@ -5636,6 +5644,8 @@ void Master::_accept(
               }
             }
 
+
+            //TOOD: Få task til å få datacenter der han får resources fra 
             addTask(task, framework, slave);
             consumed += task.resources();
 
@@ -10224,7 +10234,23 @@ void Master::offer(
   foreachvalue (const auto& agents, resources) {
     offersEstimate += agents.size();
   }
+  /*
+  hashmap<string, hashmap<SlaveID, Resources>> temp;
 
+  //Sort offers 
+  foreach(const auto& hm, resources) {
+    const std::basic_string<char> temp = hm.first;
+    
+    foreach( const auto& tempId, hm.second.keys()){
+      Slave* slave = slaves.registered.get(tempId);
+      Option<Resources> tempResources = hm.second.get(tempId);
+      if(slave.info.resources(i).datacenter_id().datacenter_id().compare("5") == 0){
+
+      }
+    }
+    
+  }
+  */
   // Each offer we create is tied to a single agent
   // and a single allocation role.
   ResourceOffersMessage message;
@@ -10233,6 +10259,8 @@ void Master::offer(
 
   // We keep track of the offer IDs so that we can log them.
   vector<OfferID> offerIds;
+  vector<DatacenterID> datacenterIds;
+
   offerIds.reserve(offersEstimate);
 
   foreachkey (const string& role, resources) {
@@ -10304,11 +10332,11 @@ void Master::offer(
       offer->mutable_framework_id()->MergeFrom(framework->id());
       offer->mutable_slave_id()->MergeFrom(slave->id);
       offer->set_hostname(slave->info.hostname());
+      offer->mutable_datacenter_id()->set_datacenter_id(slave->info.datacenter_id().datacenter_id());
       offer->mutable_url()->MergeFrom(url);
       offer->mutable_resources()->MergeFrom(offered);
       offer->mutable_attributes()->MergeFrom(slave->info.attributes());
       offer->mutable_allocation_info()->set_role(role);
-
       if (slave->info.has_domain()) {
         offer->mutable_domain()->MergeFrom(slave->info.domain());
       }
@@ -10387,7 +10415,9 @@ void Master::offer(
               << " to framework " << *framework;
 
       offerIds.push_back(offer_.id());
+      datacenterIds.push_back(offer->datacenter_id());
 
+      LOG(INFO) << "HAR IKKE DATACENTER ID SATT?" << slave->info.datacenter_id().datacenter_id() << role;
       // Add the offer *AND* the corresponding slave's PID.
       *message.add_offers() = std::move(offer_);
       message.add_pids(slave->pid);
@@ -10397,7 +10427,21 @@ void Master::offer(
   if (message.offers().size() == 0) {
     return;
   }
+  foreach(const Offer& offer, message.offers()){
+    LOG(INFO) << "OFFERS I DENNE REKKEFØLGE: " << offer.datacenter_id().datacenter_id();
+  }
+  LOG(INFO) << "Sending offers " << offerIds << " to framework " << *framework;
 
+  std::sort(message.mutable_offers()->begin(),
+          message.mutable_offers()->end(),
+          [](const Offer& lhs, const Offer& rhs)
+{
+    return std::stoi(lhs.datacenter_id().datacenter_id()) < std::stoi(rhs.datacenter_id().datacenter_id());
+});
+
+   foreach(const Offer& offer, message.offers()){
+    LOG(INFO) << "OFFERS I DENNE REKKEFØLGE ETTER SORT: " << offer.datacenter_id().datacenter_id();
+  }
   LOG(INFO) << "Sending offers " << offerIds << " to framework " << *framework;
 
   framework->metrics.offers_sent += message.offers().size();
@@ -10480,7 +10524,6 @@ void Master::inverseOffer(
 
     framework->addInverseOffer(inverseOffer);
     slave->addInverseOffer(inverseOffer);
-
     // TODO(jmlvanre): Do we want a separate flag for inverse offer
     // timeout?
     if (flags.offer_timeout.isSome()) {
@@ -10514,9 +10557,7 @@ void Master::inverseOffer(
 
 
 // TODO(vinod): If due to network partition there are two instances
-// of the framework that think they are leaders and try to
-// authenticate with master they would be stepping on each other's
-// toes. Currently it is tricky to detect this case because the
+// of the framework that think they are l"SLAVEID VI FØRST SENDER FRAbecause the
 // 'authenticate' message doesn't contain the 'FrameworkID'.
 // 'from' is the authenticatee process with which to communicate.
 // 'pid' is the framework/slave process being authenticated.
@@ -10529,11 +10570,7 @@ void Master::authenticate(const UPID& from, const UPID& pid)
   //
   // 1. First time the client is connecting.
   //    This is straightforward; just proceed with authentication.
-  //
-  // 2. Client retried because of ZK expiration / authentication timeout.
-  //    If the client is already authenticated, it will be removed from
-  //    the 'authenticated' map and authentication is retried.
-  //
+  //"SLAVEID VI FØRST SENDER FRA
   // 3. Client restarted.
   //   3.1. We are here after receiving 'exited()' from old client.
   //        This is safe because the client will be first marked as

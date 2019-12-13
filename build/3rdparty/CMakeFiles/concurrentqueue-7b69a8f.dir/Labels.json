@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/concurrentqueue-7b69a8f"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/concurrentqueue-7b69a8f.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/concurrentqueue-7b69a8f-complete.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/concurrentqueue-7b69a8f/src/concurrentqueue-7b69a8f-stamp/concurrentqueue-7b69a8f-install.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/concurrentqueue-7b69a8f/src/concurrentqueue-7b69a8f-stamp/concurrentqueue-7b69a8f-mkdir.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/concurrentqueue-7b69a8f/src/concurrentqueue-7b69a8f-stamp/concurrentqueue-7b69a8f-download.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/concurrentqueue-7b69a8f/src/concurrentqueue-7b69a8f-stamp/concurrentqueue-7b69a8f-update.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/concurrentqueue-7b69a8f/src/concurrentqueue-7b69a8f-stamp/concurrentqueue-7b69a8f-patch.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/concurrentqueue-7b69a8f/src/concurrentqueue-7b69a8f-stamp/concurrentqueue-7b69a8f-configure.rule"
+		},
+		{
+			"file" : "/home/hanshenriksande/Master/mesos/build/3rdparty/concurrentqueue-7b69a8f/src/concurrentqueue-7b69a8f-stamp/concurrentqueue-7b69a8f-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"concurrentqueue-7b69a8f"
+		],
+		"name" : "concurrentqueue-7b69a8f"
+	}
+}

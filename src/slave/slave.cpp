@@ -604,7 +604,7 @@ void Slave::initialize()
   // Initialize slave info.
   info.set_hostname(hostname);
   info.set_port(self().address.port);
-  
+  info.mutable_datacenter_id()->set_datacenter_id(flags.datacenterid);
   //for(const Resource& resource : info.resources())
   //info.resources().size;
   info.mutable_resources()->CopyFrom(resources.get());

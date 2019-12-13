@@ -1,0 +1,13 @@
+# Target labels
+ grpc-1.10.0
+# Source files and their labels
+/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/grpc-1.10.0
+/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/grpc-1.10.0.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/CMakeFiles/grpc-1.10.0-complete.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-install.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-mkdir.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-download.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-update.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-patch.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-configure.rule
+/home/hanshenriksande/Master/mesos/build/3rdparty/grpc-1.10.0/src/grpc-1.10.0-stamp/grpc-1.10.0-build.rule

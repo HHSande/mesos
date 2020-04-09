@@ -1981,6 +1981,7 @@ message PerfStatistics {
 message Request {
   optional SlaveID slave_id = 1;
   repeated Resource resources = 2;
+  optional DatacenterID datacenter_id = 3;
 }
 
 

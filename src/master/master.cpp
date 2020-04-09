@@ -10230,27 +10230,12 @@ void Master::offer(
     return;
   }
 
+
   size_t offersEstimate = 0u;
   foreachvalue (const auto& agents, resources) {
     offersEstimate += agents.size();
   }
-  /*
-  hashmap<string, hashmap<SlaveID, Resources>> temp;
 
-  //Sort offers 
-  foreach(const auto& hm, resources) {
-    const std::basic_string<char> temp = hm.first;
-    
-    foreach( const auto& tempId, hm.second.keys()){
-      Slave* slave = slaves.registered.get(tempId);
-      Option<Resources> tempResources = hm.second.get(tempId);
-      if(slave.info.resources(i).datacenter_id().datacenter_id().compare("5") == 0){
-
-      }
-    }
-    
-  }
-  */
   // Each offer we create is tied to a single agent
   // and a single allocation role.
   ResourceOffersMessage message;
@@ -10259,22 +10244,22 @@ void Master::offer(
 
   // We keep track of the offer IDs so that we can log them.
   vector<OfferID> offerIds;
-  vector<DatacenterID> datacenterIds;
-
+  vector<string> clusterIds;
   offerIds.reserve(offersEstimate);
 
   foreachkey (const string& role, resources) {
+    LOG(INFO) << "FOR EACH KEY I ROLE OFFERS";
     foreachpair (const SlaveID& slaveId,
                  const Resources& offered,
                  resources.at(role)) {
       Slave* slave = slaves.registered.get(slaveId);
-
+      LOG(INFO) << "FOR EACH PARI RESOURCES AT ROLE " << role;
       if (slave == nullptr) {
         LOG(WARNING)
           << "Master returning resources offered to framework " << *framework
           << " because agent " << slaveId << " is not valid";
 
-        allocator->recoverResources(frameworkId, slaveId, offered, None());
+       allocator->recoverResources(frameworkId, slaveId, offered, None());
         continue;
       }
 
@@ -10285,7 +10270,8 @@ void Master::offer(
           << "Master returning resources offered because agent " << *slave
           << " is " << (slave->connected ? "deactivated" : "disconnected");
 
-        allocator->recoverResources(frameworkId, slaveId, offered, None());
+        allocator->recoverResources(frameworkId, slaveId, offered, None());;
+
         continue;
       }
 
@@ -10309,7 +10295,8 @@ void Master::offer(
           // Pass a default filter to avoid getting this same offer immediately
           // from the allocator. Note that a default-constructed `Filters`
           // object has its `refuse_seconds` offer filter set to 5 seconds.
-          allocator->recoverResources(frameworkId, slaveId, offered, Filters());
+          allocator->recoverResources(
+              frameworkId, slaveId, offered, Filters(), false);
           continue;
         }
       }
@@ -10332,11 +10319,11 @@ void Master::offer(
       offer->mutable_framework_id()->MergeFrom(framework->id());
       offer->mutable_slave_id()->MergeFrom(slave->id);
       offer->set_hostname(slave->info.hostname());
-      offer->mutable_datacenter_id()->set_datacenter_id(slave->info.datacenter_id().datacenter_id());
       offer->mutable_url()->MergeFrom(url);
       offer->mutable_resources()->MergeFrom(offered);
       offer->mutable_attributes()->MergeFrom(slave->info.attributes());
       offer->mutable_allocation_info()->set_role(role);
+
       if (slave->info.has_domain()) {
         offer->mutable_domain()->MergeFrom(slave->info.domain());
       }
@@ -10409,15 +10396,16 @@ void Master::offer(
             offer_.mutable_resources(), PRE_RESERVATION_REFINEMENT);
       }
 
-      VLOG(2) << "Sending offer " << offer_.id()
+      LOG(INFO) << "Sending offer " << offer_.id()
               << " containing resources " << offered
               << " on agent " << *slave
-              << " to framework " << *framework;
+              << " to framework " << *framework
+              << "role " << role;
+
+        LOG(INFO) << offered;
 
       offerIds.push_back(offer_.id());
-      datacenterIds.push_back(offer->datacenter_id());
-
-      LOG(INFO) << "HAR IKKE DATACENTER ID SATT?" << slave->info.datacenter_id().datacenter_id() << role;
+      clusterIds.push_back(slave->info.datacenter_id().datacenter_id());
       // Add the offer *AND* the corresponding slave's PID.
       *message.add_offers() = std::move(offer_);
       message.add_pids(slave->pid);
@@ -10427,133 +10415,17 @@ void Master::offer(
   if (message.offers().size() == 0) {
     return;
   }
-  foreach(const Offer& offer, message.offers()){
-    LOG(INFO) << "OFFERS I DENNE REKKEFØLGE: " << offer.datacenter_id().datacenter_id();
+
+  LOG(INFO) << "Sending offers " << offerIds  << " to framework " << *framework;
+  LOG(INFO) << "CLUSTER IDS: ";
+  foreach(const string& val, clusterIds){
+    LOG(INFO) << val;  
   }
-  LOG(INFO) << "Sending offers " << offerIds << " to framework " << *framework;
-
-  std::sort(message.mutable_offers()->begin(),
-          message.mutable_offers()->end(),
-          [](const Offer& lhs, const Offer& rhs)
-{
-    return std::stoi(lhs.datacenter_id().datacenter_id()) < std::stoi(rhs.datacenter_id().datacenter_id());
-});
-
-   foreach(const Offer& offer, message.offers()){
-    LOG(INFO) << "OFFERS I DENNE REKKEFØLGE ETTER SORT: " << offer.datacenter_id().datacenter_id();
-  }
-  LOG(INFO) << "Sending offers " << offerIds << " to framework " << *framework;
-
+  
   framework->metrics.offers_sent += message.offers().size();
   framework->send(message);
 }
 
-
-void Master::inverseOffer(
-    const FrameworkID& frameworkId,
-    const hashmap<SlaveID, UnavailableResources>& resources)
-{
-  if (!frameworks.registered.contains(frameworkId) ||
-      !frameworks.registered[frameworkId]->active()) {
-    LOG(INFO) << "Master ignoring inverse offers to framework " << frameworkId
-              << " because the framework has terminated or is inactive";
-
-    return;
-  }
-
-  // Create an inverse offer for each slave and add it to the message.
-  InverseOffersMessage message;
-
-  Framework* framework = CHECK_NOTNULL(frameworks.registered[frameworkId]);
-  foreachpair (const SlaveID& slaveId,
-               const UnavailableResources& unavailableResources,
-               resources) {
-    Slave* slave = slaves.registered.get(slaveId);
-
-    if (slave == nullptr) {
-      LOG(INFO)
-        << "Master ignoring inverse offers to framework " << *framework
-        << " because agent " << slaveId << " is not valid";
-
-      continue;
-    }
-
-    // This could happen if the allocator dispatched 'Master::inverseOffer'
-    // before the slave was deactivated in the allocator.
-    if (!slave->active) {
-      LOG(INFO)
-        << "Master ignoring inverse offers to framework " << *framework
-        << " because agent " << *slave << " is "
-        << (slave->connected ? "deactivated" : "disconnected");
-
-      continue;
-    }
-
-    // This could happen if the allocator dispatched `Master::inverseOffer`
-    // before the unavailability was removed in the master.
-    if (!machines.contains(slave->machineId) ||
-        !machines.at(slave->machineId).info.has_unavailability()) {
-      LOG(INFO)
-        << "Master dropping inverse offers to framework " << *framework
-        << " because agent " << *slave << " had its unavailability revoked.";
-
-      continue;
-    }
-
-    // TODO(bmahler): Set "https" if only "https" is supported.
-    mesos::URL url;
-    url.set_scheme("http");
-    url.mutable_address()->set_hostname(slave->info.hostname());
-    url.mutable_address()->set_ip(stringify(slave->pid.address.ip));
-    url.mutable_address()->set_port(slave->pid.address.port);
-    url.set_path("/" + slave->pid.id);
-
-    InverseOffer* inverseOffer = new InverseOffer();
-
-    // We use the same id generator as regular offers so that we can
-    // have unique ids across both. This way we can re-use some of the
-    // `OfferID` only messages.
-    inverseOffer->mutable_id()->CopyFrom(newOfferId());
-    inverseOffer->mutable_framework_id()->CopyFrom(framework->id());
-    inverseOffer->mutable_slave_id()->CopyFrom(slave->id);
-    inverseOffer->mutable_url()->CopyFrom(url);
-    inverseOffer->mutable_unavailability()->CopyFrom(
-        unavailableResources.unavailability);
-
-    inverseOffers[inverseOffer->id()] = inverseOffer;
-
-    framework->addInverseOffer(inverseOffer);
-    slave->addInverseOffer(inverseOffer);
-    // TODO(jmlvanre): Do we want a separate flag for inverse offer
-    // timeout?
-    if (flags.offer_timeout.isSome()) {
-      // Rescind the inverse offer after the timeout elapses.
-      inverseOfferTimers[inverseOffer->id()] =
-        delay(flags.offer_timeout.get(),
-              self(),
-              &Self::inverseOfferTimeout,
-              inverseOffer->id());
-    }
-
-    // Add the inverse offer *AND* the corresponding slave's PID.
-    message.add_inverse_offers()->CopyFrom(*inverseOffer);
-    message.add_pids(slave->pid);
-  }
-
-  if (message.inverse_offers().size() == 0) {
-    return;
-  }
-
-  vector<OfferID> inverseOfferIds;
-  foreach (const InverseOffer& inverseOffer, message.inverse_offers()) {
-    inverseOfferIds.push_back(inverseOffer.id());
-  }
-
-  LOG(INFO) << "Sending inverse offers " << inverseOfferIds << " to framework "
-            << *framework;
-
-  framework->send(message);
-}
 
 
 // TODO(vinod): If due to network partition there are two instances
@@ -12731,7 +12603,6 @@ void Master::_removeOffer(Framework* framework, Offer* offer)
 
   // Delete it.
   LOG(INFO) << "Removing offer " << offer->id();
-
   offers.erase(offer->id());
   delete offer;
 }
@@ -12753,6 +12624,18 @@ void Master::inverseOfferTimeout(const OfferID& inverseOfferId)
   }
 }
 
+void Master::inverseOffer(
+    const FrameworkID& frameworkId,
+    const hashmap<SlaveID, UnavailableResources>& resources)
+{
+  if (!frameworks.registered.contains(frameworkId) ||
+      !frameworks.registered[frameworkId]->active()) {
+    LOG(INFO) << "Master ignoring inverse offers to framework " << frameworkId
+              << " because the framework has terminated or is inactive";
+
+    return;
+  }
+}
 
 void Master::removeInverseOffer(InverseOffer* inverseOffer, bool rescind)
 {

@@ -36,6 +36,12 @@
 #include "common/resources_utils.hpp"
 
 #include "affinity_propagation.hpp"
+#include <iostream>
+#include <string> 
+#include <boost/lexical_cast.hpp>
+#include <tuple>
+#include <fstream>
+
 using std::make_shared;
 using std::set;
 using std::shared_ptr;
@@ -68,6 +74,25 @@ namespace master {
 namespace allocator {
 namespace internal {
 
+hashmap<SlaveID, Slave> datacenterSlaves(int datacenterid);
+bool hasSufficientResources(::google::protobuf::RepeatedPtrField< ::mesos::Resource > request, Resources slaveResource);
+std::vector<int> getDatacentersInCluster(int datacenterId);
+int getExemplar(int datacenterID);
+std::vector<int> getAllExemplars();
+bool enoughResourcesInDatacenter(Request request, int datacenterID, Framework framework, const FrameworkID& frameworkId);
+bool enoughResourcesInAnyDatacenterInSameCluster(Request request, int datacenterID, Framework framework, FrameworkID frameworkId);
+int helperFunc(string value);
+hashmap<SlaveID, Resources> getValues(int datacenterID);
+void binPacking(hashmap<SlaveID, Resources> resourceMap,int n, Resources binsize, FrameworkID frameworkId);
+hashmap<int, std::vector<binPackItems> > generateCandidateSolutions(hashmap<SlaveID, Resources> resourceMap, Resources request);
+int getClosestCluster(int datacenter_id, std::vector<int> checked);
+Resources getTotalOfferableResources(Slave slave, SlaveID slaveId, FrameworkID frameworkId_);
+int findClosestCluster(int currentClusterId, std::vector<int> checked);
+int findClosestDatacenter(int currentDatacenterId, std::vector<int> checked);
+bool isRemainingEmpty(hashmap<string, int> remaining);
+
+double cpuTresh = 10.0;
+double ramTresh = 10.0;
 class OfferFilter
 {
 public:
@@ -280,7 +305,7 @@ private:
     if (!current->isEmpty()) {
       break;
     }
-
+    
     Role* parent = CHECK_NOTNULL(current->parent);
 
     parent->removeChild(current);
@@ -455,7 +480,7 @@ private:
 
   return jsonify(tree);
 }
-
+hashmap<int, std::vector<int> > cluster;
 
  Framework::Framework(
     const FrameworkInfo& frameworkInfo,
@@ -510,16 +535,17 @@ void DummyAllocatorProcess::initialize(
         return dispatch(_self, &DummyAllocatorProcess::generateOffers)
           .then([]() -> ControlFlow<Nothing> { return Continue(); });
       });
-      
-  cluster = apCluster();
 
+  cluster = apCluster();
   foreachpair(const int& exemplar, const vector<int>& datacenterIds, cluster){
+    LOG(INFO) << "EXEMPLAR: "  << exemplar;
     foreach(const int& id, datacenterIds){
       LOG(INFO) << "Cluster ID: " << exemplar << " har ID i seg: " << id;
     }
   }
   LOG(INFO) << "Dummy Allocator Process initialized";
 }
+
 
 void DummyAllocatorProcess::recover(
     const int _expectedAgentCount,
@@ -617,6 +643,7 @@ void DummyAllocatorProcess::addFramework(
   }
 
   // Update the allocation for this framework.
+  
   foreachpair (const SlaveID& slaveId, const Resources& resources, used) {
     // TODO(bmahler): The master won't tell us about resources
     // allocated to agents that have not yet been added, consider
@@ -625,14 +652,14 @@ void DummyAllocatorProcess::addFramework(
 
       continue;
     }
-
+    LOG(INFO) << "LA TIL FRAMEWORK " << frameworkId << " SLAVEID " << slaveId;
     // The slave struct will already be aware of the allocated
     // resources, so we only need to track them in the sorters.
     trackAllocatedResources(slaveId, frameworkId, resources);
   }
   
   if (active) {
-    generateOffers();
+    generateOffers(); //HER
   } else {
     deactivateFramework(frameworkId);
   }
@@ -887,10 +914,30 @@ void DummyAllocatorProcess::addSlave(
     LOG(INFO) << "Agent resources datacenterID: " << slave.info.resources(i).datacenter_id().datacenter_id();
     
   }
-  generateOffers(slaveId);
+  //slavesInDatacenters = mapSlavesToDatacenters(slaves);
+
+    //KAN VÆRE AT DEN HAR GITT BORT ALT AV RESSURSER NÅR VI KALLER REQUEST
+    //generateOffers(slaveId); //HER
     LOG(INFO) << "Added agent " << slaveId;
 
 }
+
+/*
+hashmap<int, std::vector<SlaveID>> mapSlavesToDatacenters(hashmap<SlaveID, Slave> param){
+  hashmap<int, std::vector<SlaveID>> temp = {};
+
+  foreachpair(const SlaveID& slaveId, const Slave& slave, param){
+    int datacenter = stoi(slave.info.datacenter_id().datacenter_id());
+
+    foreachpair(const int& exemplar, const vector<int>& datacenterIds, cluster){
+      
+      if (std::find(datacenterIds.begin(), datacenterIds.end(),datacenter) != datacenterIds.end()){
+          temp[datacenter].push_back(slaveId);
+      }
+    }
+  }
+}
+*/
 
 void DummyAllocatorProcess::removeSlave(
     const SlaveID& slaveId)
@@ -1090,7 +1137,249 @@ void DummyAllocatorProcess::updateWhitelist(
   }
 
 }
+/*
+vector<Slave> getSlavesInDatacenter(int datacenterId){
+    vector<Slave> temp = {};
 
+    foreach(const Slave& slave, slaves){
+      if(slave.info.datacenter_id().datacenter_id() == datacenterId){
+        temp.push_back(slave);
+      }
+    }
+
+    return temp;
+}
+*/
+/*
+int getDataCenterOfSlave(int slaveId){getDatacentersInClusternters.end(), slaveId) != datacenters.end()){
+      LOG(INFO) << "SLAVE MED SLAVE ID: " << slaveId << " var i datacenterCluster: " << exemplar;
+      return exemplar; 
+    }
+  }
+}
+*/
+
+hashmap<SlaveID, Slave> DummyAllocatorProcess::datacenterSlaves(int datacenterid){
+    hashmap<SlaveID, Slave> temp;
+    foreachpair(const SlaveID& slaveID, const Slave& slave, slaves){
+        try{
+         int slaveDatacenter = boost::lexical_cast<int>(slave.info.datacenter_id().datacenter_id()); 
+          if(slaveDatacenter == datacenterid){
+          temp.put(slaveID, slave);
+          }
+        } catch(boost::bad_lexical_cast const &e)	{
+		      std::cout << "error" << '\n';
+	      }
+       
+    }
+
+    return temp;
+}
+
+int max(int x, int y) {
+   return (x > y) ? x : y;
+}
+bool containsDatacenter(std::vector<int> datacenters, int datacenterId){
+  
+  return std::find(datacenters.begin(), datacenters.end(), datacenterId) != datacenters.end();
+  
+}
+
+void printShit(std::vector<int> shit){
+  for(uint i = 0; i < shit.size(); i++){
+    LOG(INFO) << shit[i];
+  }
+}
+
+hashmap<SlaveID, Resources> DummyAllocatorProcess::getValues(int datacenterID){
+  hashmap<SlaveID, Resources> hm;
+
+  std::vector<int> datacenters = getDatacentersInCluster(datacenterID);
+  for(uint i = 0; i < datacenters.size(); i++){
+    hashmap<SlaveID, Slave> slavesToCheck = datacenterSlaves(datacenters[i]);
+    foreachpair(const SlaveID& id, const Slave& slave, slavesToCheck){
+      hm.put(id, slave.getAvailable());
+    }
+  }
+
+  return hm;
+}
+
+int getRandomClusterId(){
+    std::vector<int> clusterIds;
+
+    foreachkey(int clusterId, cluster){
+      clusterIds.push_back(clusterId);
+    }
+
+    int numClusters = clusterIds.size();
+    int randomClusterId = rand() % numClusters;
+
+    return clusterIds[randomClusterId];
+}
+
+int getRandomDatacenterId(int clusterId){
+
+    if(cluster.get(clusterId).isNone()){
+      LOG(INFO) << "ERROR I getRandomDatacenterId, get på clusterId var NONE!";
+      return -1; //Ingen datacentre i clusteret(?)
+    }else{
+      std::vector<int> datacenterIds = cluster.get(clusterId).get();
+      int numDatacenters = datacenterIds.size();
+      int randomDatacenterId = rand() % numDatacenters;
+
+      return datacenterIds[randomDatacenterId];
+    }
+}
+
+hashmap<string, int> getResourcesOfBundle(BundleCategory category){    //Kanskje gjøre om til double istedet for å jobbe med et Resources objekt?
+
+    /*Resource ram;
+    Resource cpu;
+    std::vector<Resource> temp;
+
+    ram.set_type(Value::SCALAR);
+    ram.set_name("mem");
+
+    cpu.set_type(Value::SCALAR);
+    cpu.set_name("cpus");
+    */
+    hashmap<string, int> tempHm;
+
+    switch(category){
+      case BundleCategory::Small:
+        //ram.mutable_scalar()->set_value(500);
+        //cpu.mutable_scalar()->set_value(1);
+
+        tempHm.put("mem", 500);
+        tempHm.put("cpus", 1);
+        break;
+      case BundleCategory::Medium:
+        //ram.mutable_scalar()->set_value(1000);
+        //cpu.mutable_scalar()->set_value(2);
+
+        tempHm.put("mem", 1000);
+        tempHm.put("cpus", 2);
+        break;
+      case BundleCategory::Large:
+        //ram.mutable_scalar()->set_value(1500);
+        //cpu.mutable_scalar()->set_value(3);
+
+        tempHm.put("mem", 1500);
+        tempHm.put("cpus", 3);
+        break;
+      case BundleCategory::Last:
+        LOG(INFO) << "SKAL IKKE KOMME HIT";
+        break;
+    }
+
+    /*temp.push_back(ram);
+    temp.push_back(cpu);
+
+    Resources resources(temp);
+    */
+    return tempHm;
+}
+
+double getSpecificResourceType(Resources res, string resourceType){
+  foreach(Resource r, res){
+    if(r.name() == resourceType){
+      return r.scalar().value();
+    }
+  }
+
+  return 0.0;
+}
+bool checkResourcesForBundle(BundleCategory category, Resources toOffer, hashmap<string, int> remaining){
+
+
+  /*
+  * 1. Sjekke om den kan tilfredstille hele categorien
+  * 2. Sjekke om den fyller treshholds?
+  * 3. Sjekke om det er nok til å fylle resten av remaining?
+  */
+
+  double cpusToOffer = getSpecificResourceType(toOffer, "cpus");
+  int remainingCpus = remaining.get("cpus").get();
+
+  double ramToOffer = getSpecificResourceType(toOffer, "mem");
+  int remainingRam = remaining.get("mem").get();
+  
+  bool cpuTresholdSufficient = (cpusToOffer/remainingCpus)*100 >= cpuTresh;
+  bool ramTreshholdSufficient = (ramToOffer/remainingRam)*100 >= ramTresh;
+
+  bool satisfiesTreshhold = cpuTresholdSufficient && ramTreshholdSufficient;
+
+
+  LOG(INFO) << "PASSET THRESHHOLDET? " << satisfiesTreshhold;
+  bool enoughRam = ramToOffer >= remainingRam;
+  bool enoughCpu = cpusToOffer >= remainingCpus;
+
+  
+
+  //Check treshhold?
+
+  LOG(INFO) << "HADDE NOK RESOURCES " << enoughCpu && enoughRam; 
+  return (enoughCpu && enoughRam) || satisfiesTreshhold;
+}
+
+
+BundleCategory getNextCategory(BundleCategory category){
+  
+  //BundleCategory next = category++;
+  int x = 0;
+  for(int i = 0; i < BundleCategory::Last; i++){
+    if((BundleCategory) i == category){
+      x = i+1;
+      break; 
+    }
+  }
+  LOG(INFO) << "RETURING BUNDLE CATEGORY " << x;
+  return (BundleCategory) x;
+}
+
+int getVekt(hashmap<SlaveID, Resources> hm){
+  int i = 0;
+  foreachpair(SlaveID slaveID, Resources res, hm){
+    i++;
+  }
+
+  return i;
+}
+
+int DummyAllocatorProcess::getClosestCluster(int datacenter_id, std::vector<int> checked){
+
+  std::vector<int> exemplars = getAllExemplars();
+  //Kalkulere korteste, velger bare en ny nå
+  LOG(INFO) << "FØR VI FJERNER EXEMPALRS";
+  foreach(int x, exemplars){
+    LOG(INFO) << x;
+  }
+  
+  foreach(int exemplar, checked){
+    LOG(INFO) << "I CHECKED: ";
+    LOG(INFO) << exemplar;
+    exemplars.erase(std::remove(exemplars.begin(), exemplars.end(), exemplar), exemplars.end());
+  }
+
+  std::pair<int, double> currBest;
+
+  LOG(INFO) << "ETTER VI HAR FJERNET EXEMPLARS";
+
+  foreach(int x, exemplars){
+    double temp = getClusterDistance(getExemplar(datacenter_id), x);
+    LOG(INFO) << "CLUSTER DISTANCE " << temp;
+    if(currBest.second != 0.0){
+      if(currBest.second > temp)
+        currBest = std::make_pair(x, temp);
+    }else{
+      currBest = std::make_pair(x, temp);
+    }
+  }  
+  LOG(INFO) << "LAVESTE VI KUNNE VELGE " << currBest.second;
+  LOG(INFO) << "RETURNERER EXEMPLAR" << exemplars[0];
+  return exemplars[0];
+}
 
 void DummyAllocatorProcess::requestResources(
     const FrameworkID& frameworkId,
@@ -1098,12 +1387,694 @@ void DummyAllocatorProcess::requestResources(
 {
  
   CHECK(initialized);
-  LOG(INFO) << "JEG OSOM HAR SURRA HELT MASSIVT???";
+  const Framework& framework = *CHECK_NOTNONE(getFramework(frameworkId));
+  
+  LOG(INFO) << "DEBUG STEG 1";
+  /*for(uint i = 0; i < sz; i++)
+      for(uint j = 0; j < requests[i].resources().size(); j++){
+        LOG(INFO) << resource.Get(j).name() << " " << resource.Get(j).scalar().value();
+      }
+  }
+  */
+  foreach(Request request, requests){
+    int requestDatacenterID = boost::lexical_cast<int>(request.datacenter_id().datacenter_id());
+    bool p = enoughResourcesInDatacenter(request, requestDatacenterID, framework, frameworkId);
+    std::vector<int> checkedClusters;
 
+    int tempClusterId = requestDatacenterID;
+    if(p){
+      LOG(INFO) << "NOK RESOURCES I DATACENTERET REQUESTET KOM FRA";
+    }else if(!p){
+      LOG(INFO) << "MÅ SØKE I RESOURCES I ANNET CLUSTER!!";
+      bool p = enoughResourcesInAnyDatacenterInSameCluster(request, requestDatacenterID, framework, frameworkId);
+      if(p){
+        LOG(INFO) << "NOK RESOURCES I ET ANNET DATACENTER I SAMME CLUSTER REQUESTET KOM FRA";
+      }else{
+
+        checkedClusters.push_back(getExemplar(tempClusterId));
+        bool foundSuitableDatacenter = false;
+        while(!foundSuitableDatacenter){
+          if(checkedClusters.size() == getAllExemplars().size()){
+            LOG(INFO) << "CANNOT SATISFY THE REQUEST";
+            break;
+          }
+          
+          int datacenterIdOfClosestCluster = getClosestCluster(tempClusterId, checkedClusters);
+          tempClusterId = datacenterIdOfClosestCluster;
+
+          if(enoughResourcesInDatacenter(request, datacenterIdOfClosestCluster, framework, frameworkId)){
+              break;
+          }
+
+          if(enoughResourcesInAnyDatacenterInSameCluster(request, datacenterIdOfClosestCluster, framework, frameworkId)){
+            break;
+          }
+
+          checkedClusters.push_back(getExemplar(tempClusterId));
+        }
+        //FINNE NÆRMESTE CLUSTER, SJEKKE DET
+        //int nextCluster = getClosestCluster(requestDatacenterID);
+      }
+       /*else {
+      //KNAPSACK
+      hashmap<int, int > tempTuple = getWeights();
+      hashmap<SlaveID, Resources> values = getValues(requestDatacenterID);
+      foreachpair(int dataId, int vekt, tempTuple){
+        LOG(INFO) << "ID " << dataId << " HAR VEKT " << vekt;
+      }
+
+      foreachpair(SlaveID slaveid, Resources res, values){
+        LOG(INFO) << "RESSSSS " << res;
+      }
+      binPacking(values, getVekt(values), request.resources(), frameworkId);
+      LOG(INFO) << "BIN PACKING!!!" << getAntall();
+      
+      hashmap<int, std::vector<binPackItems> > yes = generateCandidateSolutions(values, request.resources());
+      double tempWeight = 0.0;
+      std::vector<binPackItems> offerToBeGenerated;
+      double avgWeight = 0.0;
+      foreachpair(int i, std::vector<binPackItems> item, yes){
+        LOG(INFO) << i;
+        
+
+        int temp = 0;
+        foreach(binPackItems it, item){
+          Slave& slave = *CHECK_NOTNONE(getSlave(std::get<0>(it)));
+          int slaveDatacenter = boost::lexical_cast<int>(slave.info.datacenter_id().datacenter_id());
+          if(tempTuple.get(slaveDatacenter).isSome()){
+            temp += tempTuple.get(slaveDatacenter).get();
+          }
+          LOG(INFO) << std::get<0>(it) << " " << std::get<1>(it);
+          
+        }
+        
+        avgWeight = temp/item.size();
+        LOG(INFO) << "AVG WEIGHT: " << avgWeight;
+        if(tempWeight == 0.0){
+            offerToBeGenerated = item;
+            tempWeight = avgWeight;
+        }else if(avgWeight < tempWeight){
+          offerToBeGenerated = item;
+          tempWeight = avgWeight;
+        }
+      }
+
+          foreach(binPackItems it, offerToBeGenerated){
+          Slave& slave = *CHECK_NOTNONE(getSlave(std::get<0>(it)));
+
+          SlaveID slaveId = std::get<0>(it);
+          Resources resourcesToOffer = std::get<1>(it);
+          hashmap<string, hashmap<SlaveID, Resources>> offerParam;
+          resourcesToOffer.allocate("*");
+          hashmap<SlaveID, Resources> temp;
+          temp.put(slaveId, resourcesToOffer);
+          offerParam.put("*", temp);
+          //const Resources& funk = resourcesToOffer;
+          slave.decreaseAvailable(frameworkId, resourcesToOffer);
+          trackAllocatedResources(slaveId, frameworkId, resourcesToOffer);
+          LOG(INFO) << "OFFER CALLBACK BIN PACK";
+          offerCallback(frameworkId, offerParam);    
+          
+        }
+        
+          Resources resourcesToOffer
+          hashmap<string, hashmap<SlaveID, Resources>> offerParam;
+          resourcesToOffer.allocate(role);
+          hashmap<SlaveID, Resources> temp;
+          temp.put(slaveId, resourcesToOffer);
+          offerParam.put(role, temp);
+          //const Resources& funk = resourcesToOffer;
+          slave.decreaseAvailable(frameworkId, resourcesToOffer);
+           foreach(const Resource& res, slave.getTotalOfferedOrAllocated()){
+            LOG(INFO) << "Etter andre decrease getTotalOfferedOrAllocated" << res.name() << " " << res.scalar() << " id: " << slave.info.id(); 
+          }
+          trackAllocatedResources(slaveId, frameworkId, resourcesToOffer);
+          LOG(INFO) << "OFFER CALLBACK";
+          offerCallback(frameworkId, offerParam);    
+          
+      } 
+      */
+    }
+  }
+    
   LOG(INFO) << "Received resource request from framework " << frameworkId;
+
 }
 
 
+
+hashmap<int, std::vector<binPackItems> > generateCandidateSolutions(hashmap<SlaveID, Resources> resourceMap, Resources request){
+  hashmap<int, std::vector<binPackItems> > hm;
+
+  int n = getVekt(resourceMap);
+  binPackItems candidates[n];
+  LOG(INFO) << "HVA ER N " << n;
+  int x = 0;
+  LOG(INFO) << "FØR FOR LØKKA SOM ORNÆR NO GREIER";
+  foreachpair(SlaveID slaveID, Resources res, resourceMap){
+    foreach(Resource resource, res){
+      if(resource.has_scalar()){
+        LOG(INFO) << "GENERATECANDIDATE SOLUTIONS RESOURCES " << " " << resource.name() << " " << resource.scalar();
+      }
+    }
+    candidates[x] = std::make_tuple(slaveID, res);                                                                                                                                                                                                                                                            
+    x++;
+  }
+
+  
+  int counter = 0;
+  LOG(INFO) << "FØR VI GENERERER SHIT"; 
+  while(counter < 10){
+    Resources temp;
+    std::vector<binPackItems> validOffer;
+    std::vector<binPackItems> toRemove;
+    for(int i = 0; i < n; i++){
+      toRemove.push_back(candidates[i]);
+    }
+    LOG(INFO) << "ETTER VI HAR GENERERT SHIT";
+    int tempN = n;
+    while(!hasSufficientResources(request, temp) && toRemove.size() > 0){  
+      LOG(INFO) << "START PÅ INDRE LØKKE";
+      int randomNumber = rand() % tempN;                                                                               
+      binPackItems item = toRemove[randomNumber];
+      toRemove.erase(toRemove.begin() + randomNumber);    
+      tempN--;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
+      temp += std::get<1>(item);
+      validOffer.push_back(item);
+      LOG(INFO) << "KOM OSS IGJENNOM INDRE LØKKE";
+    }
+    hm.put(counter, validOffer);
+    counter++;
+  }
+  LOG(INFO) << "CANDIDATE SOLUTIONS FERDIG";
+  return hm;
+}
+
+void binPacking(hashmap<SlaveID, Resources> resourceMap, int n, Resources request, FrameworkID frameworkId){
+  
+  //Kopiere Resources vi trenger, denne skal vi dekrementere hver gang vi legger Resources i en bin (per funn: RequestCopy (Capacity) -= ResourcesViHarLagtTil)
+  //Kommer vi over en slave som ikke passer i bin, lager vi en ny og legger den til der. 
+  //
+  /*
+  int res = 0;
+
+  binPackItems weight[n];
+  binPackItems bin_rem[n]; 
+
+  int counter = 0;
+  foreachpair(SlaveID slaveID, Resources res, resourceMap){
+    weight[counter] = std::make_tuple(slaveId, res);
+  }
+
+  for(int i = 0; i < n; i++){
+    int j;
+    for(j = 0; j < res; j++){
+      if(bin_rem[])
+    }
+  }
+*/
+}
+
+std::vector<int> getDatacentersInCluster(int datacenterId){
+  foreachpair(const int& exemplar, const vector<int>& datacenterIds, cluster){
+    LOG(INFO) << "EXEMPLAR: "  << exemplar;
+    if(std::find(datacenterIds.begin(), datacenterIds.end(), datacenterId) != datacenterIds.end()){
+        std::vector<int> temp = datacenterIds;
+        temp.push_back(exemplar);
+        return temp;
+        //return datacenterIds.push_back(exemplar);
+    }
+
+  }
+  std::vector<int> temp;
+  return temp;
+}
+
+int getExemplar(int datacenterID){
+  foreachpair(const int& exemplar, const vector<int>& datacenterIds, cluster){
+    LOG(INFO) << "EXEMPLAR: "  << exemplar;
+    if(std::find(datacenterIds.begin(), datacenterIds.end(), datacenterID) != datacenterIds.end()){
+        return exemplar;
+    }
+  }
+
+  return -1;
+}
+
+bool DummyAllocatorProcess::enoughResourcesInDatacenter(Request request, int datacenterID, Framework framework, const FrameworkID& frameworkId){
+  
+  hashmap<SlaveID, Slave> slavesToCheck = datacenterSlaves(datacenterID);
+  //LOG(INFO) << "SLAVER I DATACENTERET " << slavesToCheck.size();
+  //LOG(INFO) << "SJEKEKR OM DE HAR RESOURCES FØR NOE TULLBALL";
+  Resources resourcesToOffer = Resources(request.resources());
+
+  foreach(Slave slave, slavesToCheck.values()){
+     foreach (const Resource& resource, slave.getAvailable()) {
+        LOG(INFO) << "SIZE" << slave.getAvailable().size();                                                                   
+      if(resource.type() == Value::SCALAR){
+          LOG(INFO) << "YES " << resource.name() << " "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        << resource.scalar(); 
+      }
+     }
+  }
+  hashmap<FrameworkID, hashmap<string, hashmap<SlaveID, Resources>>> offerable;
+  
+  hashmap<string, ResourceQuantities> rolesConsumedQuota;
+  bool logHeadroomInfo = false;
+
+
+  foreach (const Role* r, roleTree.root()->children()) {
+    // TODO(mzhu): Track all role consumed quota. We may want to expose
+    // these as metrics.
+    if (r->quota() != DEFAULT_QUOTA) {
+      logHeadroomInfo = true;
+      rolesConsumedQuota[r->role] +=
+        r->reservationScalarQuantities() +
+        ResourceQuantities::fromScalarResources(
+            r->offeredOrAllocatedScalars().unreserved().nonRevocable());
+    }
+  }
+
+  ResourceQuantities requiredHeadroom;
+  foreach (const Role* r, roleTree.root()->children()) {
+    requiredHeadroom +=
+      r->quota().guarantees -
+      rolesConsumedQuota.get(r->role).getOrElse(ResourceQuantities());
+  }
+
+  ResourceQuantities availableHeadroom = roleSorter->totalScalarQuantities();
+
+  availableHeadroom -= roleSorter->allocationScalarQuantities();
+
+  availableHeadroom -=
+    roleTree.root()->reservationScalarQuantities() -
+    ResourceQuantities::fromScalarResources(
+        roleTree.root()->offeredOrAllocatedScalars().reserved());
+
+  if (logHeadroomInfo) {
+    LOG(INFO) << "Before allocation, required quota headroom is "
+              << requiredHeadroom
+              << " and available quota headroom is " << availableHeadroom;
+  }
+
+  // Subtract revocable resources.
+  foreachvalue (const Slave& slave, slaves) {
+    availableHeadroom -= ResourceQuantities::fromScalarResources(
+        slave.getAvailable().revocable().scalars());
+  }
+
+  hashmap<SlaveID, Resources> offeredSharedResources;
+
+  foreachpair(const SlaveID& slaveId, Slave& slave, slavesToCheck){
+    foreach (const string& role, roleSorter->sort()){
+
+     const Quota& quota = getQuota(role);
+
+      const ResourceQuantities& quotaGuarantees = quota.guarantees;
+      const ResourceLimits& quotaLimits = quota.limits;
+
+      // We only allocate to roles with non-default guarantees
+      // in the first stage.
+      if (quotaGuarantees.empty()) {
+        continue;
+      }
+
+      bool noFrameworks = [&]() {
+        Option<const Role*> r = roleTree.get(role);
+
+        return r.isNone() || (*r)->frameworks().empty();
+      }();
+
+      if (noFrameworks) {
+        continue;
+      }
+      if (slave.getAvailable().empty()) {
+        break; // Nothing left on this agent.
+      }
+
+      ResourceQuantities unsatisfiedQuotaGuarantees =
+        quotaGuarantees -
+        rolesConsumedQuota.get(role).getOrElse(ResourceQuantities());
+      if (unsatisfiedQuotaGuarantees.empty()) {
+        continue;
+      }
+
+      Sorter* frameworkSorter = CHECK_NOTNONE(getFrameworkSorter(role));
+
+      foreach (const string& frameworkId_, frameworkSorter->sort()) {
+        if (unsatisfiedQuotaGuarantees.empty()) {
+          break;
+        }
+        Resources available =
+          slave.getAvailable().allocatableTo(role) -
+          offeredSharedResources.get(slaveId).getOrElse(Resources());
+
+        if (available.empty()) {
+          break; // Nothing left for the role.
+        }
+
+        FrameworkID frameworkId;
+        frameworkId.set_value(frameworkId_);
+
+        const Framework& framework = *CHECK_NOTNONE(getFramework(frameworkId));
+        CHECK(framework.active) << frameworkId;
+
+        // An early `continue` optimization.
+        if (!allocatable(available, role, framework)) {
+          continue;
+        }
+
+        if (!isCapableOfReceivingAgent(framework.capabilities, slave)) {
+          continue;
+        }
+
+
+        available = stripIncapableResources(available, framework.capabilities);
+
+        Resources quotaResources =
+          available.filter([&](const Resource& resource) {
+            return resource.type() == Value::SCALAR &&
+                   Resources::isUnreserved(resource) &&
+                   !Resources::isRevocable(resource);
+          });
+
+        Resources guaranteesOffering =
+          shrinkResources(quotaResources, unsatisfiedQuotaGuarantees);
+
+        if (guaranteesOffering.empty()) {
+          continue;
+        }
+
+        Resources toOffer = guaranteesOffering +
+                               available.filter([&](const Resource& resource) {
+                                 return Resources::isReserved(resource, role) ||
+                                        resource.type() != Value::SCALAR ||
+                                        Resources::isRevocable(resource);
+                               });
+
+        Resources additionalScalarOffering =
+          quotaResources - guaranteesOffering;
+
+        if (!quotaLimits.empty()) {
+          additionalScalarOffering = shrinkResources(
+              additionalScalarOffering,
+              quotaLimits - CHECK_NOTNONE(rolesConsumedQuota.get(role)) -
+                ResourceQuantities::fromScalarResources(guaranteesOffering));
+        }
+
+        if (!requiredHeadroom.empty() && !additionalScalarOffering.empty()) {
+          additionalScalarOffering = shrinkResources(
+              additionalScalarOffering, availableHeadroom - requiredHeadroom);
+        }
+
+        toOffer += additionalScalarOffering;
+
+        // If the framework filters these resources, ignore.
+        if (!allocatable(toOffer, role, framework) ||
+            isFiltered(framework, role, slave, toOffer)) {
+          continue;
+        }
+
+        toOffer.allocate(role);
+        //resourcesToOffer.allocate(role);
+        offerable[frameworkId][role][slaveId] += toOffer;
+        offeredSharedResources[slaveId] += toOffer.shared();
+
+        ResourceQuantities increasedQuotaConsumption =
+          ResourceQuantities::fromScalarResources(
+              guaranteesOffering + additionalScalarOffering);
+
+        unsatisfiedQuotaGuarantees -= increasedQuotaConsumption;
+        rolesConsumedQuota[role] += increasedQuotaConsumption;
+        for (const string& ancestor : roles::ancestors(role)) {
+          rolesConsumedQuota[ancestor] += increasedQuotaConsumption;
+        }
+
+        requiredHeadroom -=
+          ResourceQuantities::fromScalarResources(guaranteesOffering);
+        availableHeadroom -= increasedQuotaConsumption;
+
+        //slave.decreaseAvailable(frameworkId, resourcesToOffer);
+        foreach(const Resource& res, slave.getTotalOfferedOrAllocated()){
+          LOG(INFO) << "Etter første decrease getTotalOfferedOrAllocated" << res.name() << " " << res.scalar(); 
+        }
+        //trackAllocatedResources(slaveId, frameworkId, resourcesToOffer);
+      }
+    }
+  }
+
+  //LOG(INFO) << "ETTER STAGE 1";
+ ResourceQuantities heldBackForHeadroom;
+  size_t heldBackAgentCount = 0;
+
+  // We randomize the agents here to "spread out" the effect of the first
+  // stage, which tends to allocate from the front of the agent list more
+  // so than the back.
+
+  foreachpair (const SlaveID& slaveId, Slave& slave, slavesToCheck) {
+    foreach (const string& role, roleSorter->sort()) {
+      LOG(INFO) << "KOM INN I ROLE LØKKA?";
+      // TODO(bmahler): Handle shared volumes, which are always available but
+      // should be excluded here based on `offeredSharedResources`.
+      if (slave.getAvailable().empty()) {
+        LOG(INFO) << "BREAKER FORDI SLAVE.GETAVAILABLE() ER TOM";
+        break; // Nothing left on this agent.
+      }
+
+      const ResourceLimits& quotaLimits = getQuota(role).limits;
+
+      // NOTE: Suppressed frameworks are not included in the sort.
+
+        // Offer a shared resource only if it has not been offered in this
+        // offer cycle to a framework.
+        Resources available =
+          slave.getAvailable().allocatableTo(role) -
+          offeredSharedResources.get(slaveId).getOrElse(Resources());
+
+        if (available.empty()) {
+          LOG(INFO) << "BREAKER FORDI AVAILABKE ER TOM";
+          break; // Nothing left for the role.
+        }
+
+        const Framework& framework = *CHECK_NOTNONE(getFramework(frameworkId));
+
+        // An early `continue` optimization.
+        if (!allocatable(available, role, framework)) {
+          LOG(INFO) << "CONTINUE !allocatable";
+        continue;
+        }
+
+        if (!isCapableOfReceivingAgent(framework.capabilities, slave)) {
+                    LOG(INFO) << "CONTINUE !isCapableOfReceivingAgent";
+
+          continue;
+        }
+
+        available = stripIncapableResources(available, framework.capabilities);
+
+        // Reservations (including the roles ancestors' reservations),
+        // non-scalar resources and revocable resources are always allocated.
+        Resources toOffer = available.filter([&](const Resource& resource) {
+          return Resources::isReserved(resource) ||
+                 resource.type() != Value::SCALAR ||
+                 Resources::isRevocable(resource);
+        });
+
+        // Then, unreserved scalar resources are subject to quota limits
+        // and global headroom enforcement.
+        //
+        // This is hot path, we use explicit filter calls to avoid
+        // multiple traversal.
+        Resources additionalScalarOffering =
+          available.filter([&](const Resource& resource) {
+            return resource.type() == Value::SCALAR &&
+                   Resources::isUnreserved(resource) &&
+                   !Resources::isRevocable(resource);
+          });
+
+        // Limits enforcement.
+        if (!quotaLimits.empty()) {
+          additionalScalarOffering = shrinkResources(
+              additionalScalarOffering,
+              quotaLimits - CHECK_NOTNONE(rolesConsumedQuota.get(role)));
+        }
+
+        // Headroom enforcement.
+        //
+        // This check is only for performance optimization.
+        if (!requiredHeadroom.empty() && !additionalScalarOffering.empty()) {
+          Resources shrunk = shrinkResources(
+              additionalScalarOffering, availableHeadroom - requiredHeadroom);
+
+          // If resources are held back.
+          if (shrunk != additionalScalarOffering) {
+            heldBackForHeadroom += ResourceQuantities::fromScalarResources(
+                additionalScalarOffering - shrunk);
+            ++heldBackAgentCount;
+
+            additionalScalarOffering = std::move(shrunk);
+          }
+        }
+
+        toOffer += additionalScalarOffering;
+
+        // If the framework filters these resources, ignore.
+        if (!allocatable(toOffer, role, framework) ||
+            isFiltered(framework, role, slave, toOffer)) {
+              LOG(INFO) << "CONTINUE FRAMEWORK FILTERED";
+          //continue;
+        }
+
+        toOffer.allocate(role);
+        //resourcesToOffer.allocate("*");
+        offerable[frameworkId][role][slaveId] += toOffer;
+        offeredSharedResources[slaveId] += toOffer.shared();
+
+        // Update role consumed quota and quota headroom
+
+        ResourceQuantities increasedQuotaConsumption =
+          ResourceQuantities::fromScalarResources(additionalScalarOffering);
+
+        if (getQuota(role) != DEFAULT_QUOTA) {
+          rolesConsumedQuota[role] += increasedQuotaConsumption;
+          for (const string& ancestor : roles::ancestors(role)) {
+            rolesConsumedQuota[ancestor] += increasedQuotaConsumption;
+          }
+        }
+
+        availableHeadroom -= increasedQuotaConsumption;
+
+        LOG(INFO) << "SKAL SJEKKE OM DET ER NOK RESSURSER" << " " << role;;
+        //slave.getAvailable()
+        if(hasSufficientResources(request.resources(), toOffer)){
+          hashmap<string, hashmap<SlaveID, Resources>> offerParam;
+          resourcesToOffer.allocate(role);
+          hashmap<SlaveID, Resources> temp;
+          temp.put(slaveId, resourcesToOffer);
+          offerParam.put(role, temp);
+          //const Resources& funk = resourcesToOffer;
+          slave.decreaseAvailable(frameworkId, resourcesToOffer);
+           foreach(const Resource& res, slave.getTotalOfferedOrAllocated()){
+            LOG(INFO) << "Etter andre decrease getTotalOfferedOrAllocated" << res.name() << " " << res.scalar() << " id: " << slave.info.id(); 
+          }
+          trackAllocatedResources(slaveId, frameworkId, resourcesToOffer);
+          LOG(INFO) << "OFFER CALLBACK";
+          offerCallback(frameworkId, offerParam);    
+          return true;
+        }
+      
+    }
+
+  }
+  return false;
+}
+
+
+bool DummyAllocatorProcess::enoughResourcesInAnyDatacenterInSameCluster(Request request, int datacenterID, Framework framework, FrameworkID frameworkId){
+    std::vector<int> datacenters = getDatacentersInCluster(datacenterID);
+  
+    datacenters.erase(std::remove(datacenters.begin(), datacenters.end(), datacenterID), datacenters.end());
+
+    foreach(int datacenter, datacenters){
+      bool temp = enoughResourcesInDatacenter(request, datacenter, framework, frameworkId);
+      if(temp){
+        return true; 
+      }
+    }
+
+    return false;
+}
+
+/*
+bool knapSackInDatacenter(int datacenterID){
+
+}
+
+bool knapSackInCluster(int datacenterID){
+
+}
+*/
+std::vector<int> getAllExemplars(){
+  std::vector<int> exemplars;
+  for(int exemplar : cluster.keys()){
+    exemplars.push_back(exemplar);
+  }
+
+  return exemplars;
+}
+
+bool hasSufficientResources(::google::protobuf::RepeatedPtrField< ::mesos::Resource > request, Resources slaveResource){
+    std::vector<int>::size_type sz1 = request.size();
+    //std::vector<int>::size_type sz2 = slaveResource.size();
+    hashmap<string, double> resourcesOfRequest;
+    hashmap<string, double> resourcesOfSlave; 
+     std::vector<string> dataResourcesRequested;
+    bool succifient = true;
+    LOG(INFO) << "I HASSUFFICIENT"; 
+    ResourceQuantities tempTest = ResourceQuantities::fromResources(slaveResource);
+
+    //Resources testResource = Resources(request);
+
+    //LOG(INFO) << "TEST RESOURCE SIZE " << testResource.size();
+    foreach(Resource resource, request){
+      if(resource.has_scalar()){
+        LOG(INFO) << "REQUEST " << " " << resource.name() << " " << resource.scalar();
+        resourcesOfRequest.put(resource.name(), resource.scalar().value());
+        dataResourcesRequested.push_back(resource.name());
+      }
+    }
+
+    
+    foreach(Resource resource, slaveResource){
+      if(resource.has_scalar()){
+        LOG(INFO) << "SLAVE " << " " << resource.name() << " " << resource.scalar();
+        resourcesOfSlave.put(resource.name(), resource.scalar().value());
+      }
+    }
+
+    foreach(const string& key, resourcesOfRequest.keys()){
+      if(!resourcesOfSlave.contains(key)){
+        LOG(INFO) << "ERROR HADDE IKKE KEY";
+        succifient = false;
+      }else{
+        double requestValue = resourcesOfRequest.get(key).get();
+        double slaveValue = resourcesOfSlave.get(key).get();
+
+        LOG(INFO) << "REQUESTVALUE " << key  << requestValue;
+        LOG(INFO) << "SLAVEVALUE "  << key << slaveValue;
+        if(requestValue > slaveValue){
+          succifient = false;
+        }
+      }
+    }
+    LOG(INFO) << "REQUEST SIZE: " << sz1 << " SLAVE RESOURCE SIZE: " << dataResourcesRequested.size();
+
+    LOG(INFO) << "SLAVE HADDE NOK RESOURCES FOR REQUESTET? " << succifient;
+    return succifient;
+
+}
+
+int helperFunc(string value){
+  hashmap<string, int> values;
+  values.put("cpus", 1);
+  values.put("mem", 2);
+  values.put("disk", 3);
+  values.put("gpus", 4);
+
+  return values.get(value).get();
+}
+/*
+int getAnotherSufficientDatacenterFromCluster(int currentDatacenterID){
+  
+  foreachpair(const int& exemplar, const vector<int>& datacenterIds, cluster){
+    LOG(INFO) << "EXEMPLAR: "  << exemplar;
+    if(std::find(datacenterIds.begin(), datacenterIds.end(), currentDatacenterID) != datacenterIds.end()){
+
+    }
+
+  }
+
+}
+*/
 void DummyAllocatorProcess::updateAllocation(
     const FrameworkID& frameworkId,
     const SlaveID& slaveId,
@@ -1139,16 +2110,12 @@ void DummyAllocatorProcess::updateAllocation(
   // normalized by the master (contains proper AllocationInfo).
   //
   // TODO(bmahler): Check that the resources in the resource
-  // conversions have AllocationInfo set. The master should enforce
-  // this. E.g.
-  //
-  //  foreach (const ResourceConversion& conversion, conversions) {
-  //    CHECK_NONE(validateConversionOnAllocatedResources(conversion));
-  //  }
+  // conversions have AllocationInfo set. The master should enforcegetTotal
   Resources updatedOfferedResources =
     CHECK_NOTERROR(offeredResources.apply(conversions));
 
   // Update the per-slave allocation.
+  LOG(INFO) << "KJØRTE HER?";
   slave.increaseAvailable(frameworkId, offeredResources);
   slave.decreaseAvailable(frameworkId, updatedOfferedResources);
 
@@ -1270,6 +2237,37 @@ Future<Nothing> DummyAllocatorProcess::updateAvailable(
 
   return Nothing();
 
+}
+
+
+void DummyAllocatorProcess::writeBundlesToFile(BundleCategory current, FrameworkID frameworkId, hashmap<SlaveID, Resources> resources){
+  LOG(INFO) << "SKRIVE TIL FIL";
+  
+    std::ofstream myfile;
+    myfile.open("/home/hanshenriksande/Master/mesos/src/master/allocator/mesos/bundlesDatacenters.txt", std::ios::app);
+    switch(current){
+      case 0:
+        myfile << "SMALL" << "\n";
+        break;
+      case 1:
+        myfile << "MEDIUM" << "\n";
+        break;
+      case 2:
+        myfile << "LARGE" << "\n"; 
+      default:
+        break;
+    }
+
+    //myfile << current << "\n";
+    foreachpair(SlaveID slaveId, Resources res, resources){
+      Slave& slave = *CHECK_NOTNONE(getSlave(slaveId));
+      foreach(Resource r, res){
+        myfile << "Datacenter ID: " << slave.info.datacenter_id().datacenter_id() << " from cluster " << getExemplar(boost::lexical_cast<int>(slave.info.datacenter_id().datacenter_id())) << " " << slave.info.datacenter_id().datacenter_id() << " " << r.name() << " " << r.scalar() << "\n";
+      }
+    }
+    myfile << "Bundle done.\n";
+    myfile.close();
+ 
 }
 
 
@@ -1486,7 +2484,7 @@ void DummyAllocatorProcess::recoverResources(
     const Option<Filters>& filters)
 {
   CHECK(initialized);
-
+  
   if (resources.empty()) {
     return;
   }
@@ -1540,7 +2538,7 @@ void DummyAllocatorProcess::recoverResources(
 
     (*slave)->increaseAvailable(frameworkId, resources);
 
-    VLOG(1) << "Recovered " << resources
+    LOG(INFO) << "Recovered " << resources
             << " (total: " << (*slave)->getTotal()
             << ", offered or allocated: "
             << (*slave)->getTotalOfferedOrAllocated() << ")"
@@ -1684,6 +2682,7 @@ void DummyAllocatorProcess::updateWeights(
 
 void DummyAllocatorProcess::pause()
 {
+  
   if(!paused){
     paused = true;
         LOG(INFO) << "pause called";
@@ -1768,42 +2767,257 @@ Nothing DummyAllocatorProcess::_generateOffers()
   return Nothing();
 }
 
-//HER BLIR TILBUD OFFERED
+Resources takeResourcesFromSlave(Resources& toOffer, hashmap<string, int>& remaining){
+
+    
+    Resource ram;
+    Resource cpu;
+    
+    std::vector<Resource> temp;
+    hashmap<string, double> remainingCalc;
+    //std::vector<Resource> remainingCalc;
+
+    ram.set_type(Value::SCALAR);
+    ram.set_name("mem");
+
+    cpu.set_type(Value::SCALAR);
+    cpu.set_name("cpus");
+
+    
+    
+    
+    //Resources resources();
+
+    foreach(Resource r, toOffer){
+      /*if(r.name().compare("mem") == 0){
+        LOG(INFO) << "FANT MEM";
+        resources.mutable_scalar()->CopyFrom(remaining.get("mem").get());
+        LOG(INFO) << "MEM " << r.scalar();
+      }else if(r.name().compare("cpus") == 0){
+        LOG(INFO) << "FANT CPUS";
+        resources.mutable_scalar()->CopyFrom(remaining.get("cpus").get());
+        LOG(INFO) << "CPUS " << r.scalar(); 
+      }else{
+        resources
+      }*/
+      if(r.name().compare("mem") == 0){
+        remainingCalc.put(r.name(), r.scalar().value());
+      }
+
+      if(r.name().compare("cpus") == 0){
+        remainingCalc.put(r.name(), r.scalar().value());
+      }
+
+      if(r.name().compare("mem") != 0){
+        if(r.name().compare("cpus") != 0){
+          temp.push_back(r);
+          continue;
+        }
+      }
+
+      if(r.name().compare("cpus") != 0){
+        if(r.name().compare("mem") != 0){
+          temp.push_back(r);
+          continue;    
+        }
+      }
+    
+      
+    }
+    
+    int memTaken = remainingCalc.get("mem").get() - remaining.get("mem").get();
+    int cpuTaken = remainingCalc.get("cpus").get() - remaining.get("cpus").get();
+
+    if(memTaken < 0){
+      ram.mutable_scalar()->set_value(remainingCalc.get("mem").get());
+    }else{
+      ram.mutable_scalar()->set_value(remaining.get("mem").get());
+    }
+
+    if(cpuTaken < 0){
+      cpu.mutable_scalar()->set_value(remainingCalc.get("cpus").get());
+    }else{
+      cpu.mutable_scalar()->set_value(remaining.get("cpus").get());
+    }
+    
+    temp.push_back(ram);
+    temp.push_back(cpu);
+
+
+    Resources resources(temp);
+    //toOffer -= resources;
+    /*foreach(Resource r, resources){
+      if(r.name().compare("mem") == 0){
+        LOG(INFO) << "FANT MEM";
+        r.mutable_scalar()->set_value(remaining.get("mem").get());
+        LOG(INFO) << "MEM " << r.scalar();
+      }else if(r.name().compare("cpus") == 0){
+        LOG(INFO) << "FANT CPUS";
+        r.mutable_scalar()->set_value(remaining.get("cpus").get());
+        LOG(INFO) << "CPUS " << r.scalar(); 
+      }
+    }*/
+    //resources.allocate("*");
+
+    int remainingMem = remaining.get("mem").get() - remainingCalc.get("mem").get();
+    int remainingCpu = remaining.get("cpus").get() - remainingCalc.get("cpus").get();
+
+    if(remainingMem < 0){
+      remaining.put("mem", 0);
+    }else{
+      remaining.put("mem", remainingMem);
+    }
+
+    if(remainingCpu < 0){
+      remaining.put("cpus", 0);
+    }else{
+      remaining.put("cpus", remainingCpu);
+    }
+
+    //remaining.put("mem", 0);
+    //remaining.put("cpus", 0);
+    
+    resources.allocate("*");
+    return resources;
+
+
+}
+Resources DummyAllocatorProcess::getTotalOfferableResources(Slave slave, SlaveID slaveId, FrameworkID frameworkId){
+   Resources available =
+          slave.getAvailable().allocatableTo("*");
+        
+        const Framework& framework = *CHECK_NOTNONE(getFramework(frameworkId));
+
+        available = stripIncapableResources(available, framework.capabilities);
+
+        Resources toOffer = available.filter([&](const Resource& resource) {
+          return Resources::isReserved(resource) ||
+                 resource.type() != Value::SCALAR ||
+                 Resources::isRevocable(resource);
+        });
+
+        Resources additionalScalarOffering =
+          available.filter([&](const Resource& resource) {
+            return resource.type() == Value::SCALAR &&
+                   Resources::isUnreserved(resource) &&
+                   !Resources::isRevocable(resource);
+          });
+
+        toOffer += additionalScalarOffering;
+
+        return toOffer;
+
+} 
+
+int findClosestCluster(int currentClusterId, std::vector<int> checked){
+  
+  std::vector<int> exemplars = getAllExemplars();
+
+  foreach(int exemplar, checked){
+    //LOG(INFO) << "I CHECKED: ";
+    //LOG(INFO) << exemplar;
+    exemplars.erase(std::remove(exemplars.begin(), exemplars.end(), exemplar), exemplars.end());
+  }
+
+  if(exemplars.size() == 0){
+    return -1;
+  }
+  std::pair<int, double> currBest;
+
+  foreach(int x, exemplars){
+    double temp = getClusterDistance(getExemplar(currentClusterId), x);
+    //LOG(INFO) << "CLUSTER DISTANCE " << temp;
+    if(currBest.second != 0.0){
+      if(currBest.second > temp)
+        currBest = std::make_pair(x, temp);
+    }else{
+      currBest = std::make_pair(x, temp);
+    }
+  }  
+  //LOG(INFO) << "LAVESTE VI KUNNE VELGE " << currBest.second;
+  //LOG(INFO) << "RETURNERER EXEMPLAR" << currBest.first;
+  return currBest.first;
+}
+
+int findClosestDatacenter(int currentDatacenterId, std::vector<int> checked){
+
+  int clusterId = getExemplar(currentDatacenterId);
+  std::vector<int> datacentersInCluster = cluster.get(clusterId).get();
+
+  foreach(int datacenter, checked){
+    datacentersInCluster.erase(std::remove(datacentersInCluster.begin(), datacentersInCluster.end(), datacenter), datacentersInCluster.end());
+  }
+
+  if(datacentersInCluster.size() == 0){
+    return -1;
+  }
+  std::pair<int, double> currBest;
+
+
+  foreach(int x, datacentersInCluster){
+    double temp = getDatacenterDistance(currentDatacenterId, x);
+    //LOG(INFO) << "DATACENTER DISTANCE " << temp;
+    if(currBest.second != 0.0){
+      if(currBest.second > temp)
+        currBest = std::make_pair(x, temp);
+    }else{
+      currBest = std::make_pair(x, temp);
+    }
+  }  
+  //LOG(INFO) << "LAVESTE VI KUNNE VELGE " << currBest.second;
+  //LOG(INFO) << "RETURNERER DATACENTER" << currBest.first;
+  return currBest.first;
+
+
+}
+
+BundleCategory checkPreviousBundles(BundleCategory currentCategory, Resources res, hashmap<BundleCategory, std::vector<std::pair<SlaveID, Resources>>> bundles){
+
+  BundleCategory temp = BundleCategory::Small;
+
+  while(temp != currentCategory){
+    if(bundles.get(temp).get().size() > 1){
+      return temp;
+    }
+
+    temp = getNextCategory(temp);
+  }
+
+  return BundleCategory::Last;
+}
+
+void printAvailableResources(Resources r, Slave slave){
+  LOG(INFO) << "CURRENT RESOURCES";
+  foreach(const Resource& res, r){
+    LOG(INFO) << res.name() << " " << res.scalar() << " id: " << slave.info.id(); 
+  }
+}
+
 void DummyAllocatorProcess::__generateOffers()
 {
-  // Compute the offerable resources, per framework:
+ // Compute the offerable resources, per framework:
   //   (1) For reserved resources on the slave, allocate these to a
   //       framework having the corresponding role.
   //   (2) For unreserved resources on the slave, allocate these
   //       to a framework of any role.
-  hashmap<FrameworkID, hashmap<string, hashmap<SlaveID, Resources>>> offerable;
+  //hashmap<int, hashmap<FrameworkID, hashmap<string, hashmap<SlaveID, Resources>>>> offerable;
 
   // NOTE: This function can operate on a small subset of
   // `allocationCandidates`, we have to make sure that we don't
   // assume cluster knowledge when summing resources from that set.
 
   vector<SlaveID> slaveIds;
-  slaveIds.reserve(allocationCandidates.size());
-  vector<SlaveID> outsideDatacenter;
+  //slaveIds.reserve(allocationCandidates.size());
+  hashmap<FrameworkID, hashmap<BundleCategory, std::vector<std::pair<SlaveID, Resources>>>> bundles;
 
   // Filter out non-whitelisted, removed, and deactivated slaves
   // in order not to send offers for them.
-  foreach (const SlaveID& slaveId, allocationCandidates) {
+  foreachkey (const SlaveID& slaveId, slaves) {
     Option<Slave*> slave = getSlave(slaveId);
 
     if (isWhitelisted(slaveId) && slave.isSome() && (*slave)->activated) {
-      if((*slave)->info.resources(0).datacenter_id().datacenter_id().compare("5") == 0){
-        //LOG(INFO) << "LA TIL RIKTIG SLAVE FORRERST" << (*slave)->info.resources(0).datacenter_id().datacenter_id();
-        slaveIds.push_back(slaveId);
-      }else{
-        //LOG(INFO) << "SLAVE UTENFOR DATACENTER";
-        outsideDatacenter.push_back(slaveId);
-      }
-      //slaveIds.push_back(slaveId);
+      slaveIds.push_back(slaveId);
     }
-  }
-  foreach (const SlaveID& slaveId, outsideDatacenter){
-    slaveIds.push_back(slaveId);
   }
 
   // Randomize the order in which slaves' resources are allocated.
@@ -1894,7 +3108,7 @@ void DummyAllocatorProcess::__generateOffers()
   //                        allocated resources -
   //                        unallocated reservations -
   //                        unallocated revocable resources
-  ResourceQuantities availableHeadroom = roleSorter->totalScalarQuantities();
+  ResourceQuantities availableHeadroom = totalScalarQuantities;
 
   // NOTE: The role sorter does not return aggregated allocation
   // information whereas `reservationScalarQuantities` does, so
@@ -1946,7 +3160,7 @@ void DummyAllocatorProcess::__generateOffers()
   // probability in getting their guarantees satisfied.
   foreach (const SlaveID& slaveId, slaveIds) {
     Slave& slave = *CHECK_NOTNONE(getSlave(slaveId));
-
+    //LOG(INFO) << "1ST STAGE";
     foreach (const string& role, roleSorter->sort()) {
       const Quota& quota = getQuota(role);
 
@@ -1990,6 +3204,7 @@ void DummyAllocatorProcess::__generateOffers()
       // Fetch frameworks in the order provided by the sorter.
       // NOTE: Suppressed frameworks are not included in the sort.
       Sorter* frameworkSorter = CHECK_NOTNONE(getFrameworkSorter(role));
+      LOG(INFO) << "FANT FRAMEWORK SORTER I STAGE 1 FOR " << role;
 
       foreach (const string& frameworkId_, frameworkSorter->sort()) {
         if (unsatisfiedQuotaGuarantees.empty()) {
@@ -2011,7 +3226,7 @@ void DummyAllocatorProcess::__generateOffers()
 
         const Framework& framework = *CHECK_NOTNONE(getFramework(frameworkId));
         CHECK(framework.active) << frameworkId;
-
+        
         // An early `continue` optimization.
         if (!allocatable(available, role, framework)) {
           continue;
@@ -2158,8 +3373,8 @@ void DummyAllocatorProcess::__generateOffers()
                 << " as part of its role quota";
 
         toOffer.allocate(role);
-
-        offerable[frameworkId][role][slaveId] += toOffer;
+        //int clusterID = getExemplar(boost::lexical_cast<int>(slave.info.datacenter_id().datacenter_id()));
+        //offerable[clusterID][frameworkId][role][slaveId] += toOffer;
         offeredSharedResources[slaveId] += toOffer.shared();
 
         // Update role consumed quota and quota headroom.
@@ -2177,6 +3392,9 @@ void DummyAllocatorProcess::__generateOffers()
         requiredHeadroom -=
           ResourceQuantities::fromScalarResources(guaranteesOffering);
         availableHeadroom -= increasedQuotaConsumption;
+        foreach(const Resource& res, toOffer){
+            LOG(INFO) << "FØRSTE TOOFFER, SKAL VÆRE MINDRE" << res.name() << " " << res.scalar() << " id: " << slave.info.id(); 
+          }
 
         slave.decreaseAvailable(frameworkId, toOffer);
 
@@ -2207,168 +3425,200 @@ void DummyAllocatorProcess::__generateOffers()
   // We randomize the agents here to "spread out" the effect of the first
   // stage, which tends to allocate from the front of the agent list more
   // so than the back.
-  std::random_shuffle(slaveIds.begin(), slaveIds.end());
-  vector<SlaveID> slavesWithinDatacenter;
-  vector<SlaveID> slavesInOtherDatacenter;
+  std::random_shuffle(slaveIds.begin(), slaveIds.end());                        //Sort by exemplar, lage et hashmap med cluster og tilhørende slavar
+  //Bundles her
+  //int cpuTresh = 60;
+  //int ramTresh = 60;
+  //hashmap<int, hashmap<FrameworkID, hashmap<string, hashmap<SlaveID, Resources>>>> offerable;  //Trenger en vector som er en samling av hashmaps (offers).
+  //Bytte int med enum
+  //hashmap<FrameworkID, hashmap<BundleCategory, std::vector<std::pair<SlaveID, Resources>>>> bundles;
+  //Key skal være enum, Key i 2. HM skal være datacenterID
+  hashmap<BundleCategory, std::vector<std::pair<SlaveID, Resources>>> bundle;
+  //const ResourceLimits& quotaLimits = getQuota("*").limits;
+   bool noFrameworks = [&]() {
+        Option<const Role*> r = roleTree.get("*");
 
-  //Check if there are any slaves within the same datacenter as the MASTER
-  //TODO: Add datacenterID to slave to make it easier to filter?
-  foreach(const SlaveID& slaveId, slaveIds){
+        return r.isNone() || (*r)->frameworks().empty();
+      }();
+
+      if (noFrameworks) {
+        return;
+      }
+
+
+  Sorter* frameworkSorter = CHECK_NOTNONE(getFrameworkSorter("*"));
+  bool done = false;
+  //Velger et cluster også et datacenter som vi skal starte å søke i, velger det randomly
+  foreach (const string& frameworkId_, frameworkSorter->sort()) {    //Må lage bundles for alle frameworksa
+    //Datacenter loop
+    FrameworkID frameworkId;
+    frameworkId.set_value(frameworkId_);
+
+    BundleCategory currentCategory = BundleCategory::Small;
+    hashmap<BundleCategory, hashmap<FrameworkID, std::vector<std::pair<SlaveID, Resources>>>> currentBestOffers;   //Sjekke i denne om vi kan finne en bedre løsning for tidligere satte bundles. 
+    std::vector<int> checkedDatacenters;
+    std::vector<int> checkedClusters;
+    
+    int currentClusterId = getRandomClusterId();
+    std::vector<int> datacentersInCluster = cluster.get(currentClusterId).get();
+    int currentDatacenterId = getRandomDatacenterId(currentClusterId);
+    //LOG(INFO) << "CURRENT CLUSTER ID" << currentClusterId;
+    //LOG(INFO) << "CURRENT DATACENTER ID" << currentDatacenterId;
+  
+    hashmap<SlaveID, Slave> slavesToCheck = datacenterSlaves(currentDatacenterId);
+  
+    std::vector<std::pair<SlaveID, Resources>> resourcesFromSlaves;
+
+    hashmap<string, int> remaining = getResourcesOfBundle(currentCategory);
+
+    while(!done){
+      foreachkey(const SlaveID& slaveId, slavesToCheck){
+        Slave& slave = *CHECK_NOTNONE(getSlave(slaveId));
+
+        Resources resourcesOfSlave = getTotalOfferableResources(slave, slaveId, frameworkId);
         
-        Slave& slave = *CHECK_NOTNONE(getSlave(slaveId));
+        resourcesOfSlave.allocate("*");
+        //LOG(INFO) << "RESOURCESOFSLAVE GIKK GREIT";
+        bool resourcesForCurrentBundle = checkResourcesForBundle(currentCategory, resourcesOfSlave, remaining); //Remaining = Resources tilhørende kategori - hvor mye vi har tatt sålangt
+        //takeResourcesFromSlave() ?
+        if(!resourcesForCurrentBundle){
+          BundleCategory betterOptionForPreviousBundle = checkPreviousBundles(currentCategory, resourcesOfSlave, bundles[frameworkId]);
+          
+          if(betterOptionForPreviousBundle == BundleCategory::Last)
+            continue;
+          
+          //Frigjøre resources i bundle vi skal erstatte
+          //Repetere koden under for å legge den inn igjen
+          foreachpair(SlaveID tempSlaveId, Resources res, bundles[frameworkId][betterOptionForPreviousBundle]){
+            Slave& tempSlave = *CHECK_NOTNONE(getSlave(tempSlaveId));
+            tempSlave.increaseAvailable(frameworkId, res);
+            untrackAllocatedResources(tempSlaveId, frameworkId, res);
+          }
 
-        for(int i = 0; i < slave.info.resources_size(); i++){
+          hashmap<string, int> tempRem = getResourcesOfBundle(betterOptionForPreviousBundle);
+          Resources tempTakeFromSlave = takeResourcesFromSlave(resourcesOfSlave, tempRem);
+          std::vector<std::pair<SlaveID, Resources>> tempVec;
+          tempVec.push_back(std::make_pair(slaveId, tempTakeFromSlave));
+          slave.decreaseAvailable(frameworkId, tempTakeFromSlave);
+          trackAllocatedResources(slaveId, frameworkId, tempTakeFromSlave);
+
+          bundle.put(betterOptionForPreviousBundle, tempVec);
+          bundles.put(frameworkId, bundle);
+          LOG(INFO) << "FANT EN BEDRE COMBO FOR OFFER AV KATEGORI " << betterOptionForPreviousBundle;
+          continue;
+        }
+
+
+        LOG(INFO) << "FØRSTE RESOURCE CHECK FOR SLAVEN";
+        printAvailableResources(resourcesOfSlave, slave);
+        Resources resourcesTakenFromSlave = takeResourcesFromSlave(resourcesOfSlave, remaining);
+        //LOG(INFO) << "ETTER VI TAR RESOURCES FRA SLAVE";
+        //printAvailableResources(resourcesOfSlave, slave);
+        resourcesFromSlaves.push_back(std::make_pair(slaveId, resourcesTakenFromSlave)); //Resources of slave blir HVOR mye vi skal ta av slaven, enten alt eller kun nødvendig bit. 
+
+        //LOG(INFO) << "RESOURCES TAKEN FROM SLAVE";
+        //printAvailableResources(resourcesTakenFromSlave, slave);
+        slave.decreaseAvailable(frameworkId, resourcesTakenFromSlave);           //Ikke toOffer resourcesTakenFromSlave ?
+        //LOG(INFO) << "FIKK DECREASET I SLAVE";
+        trackAllocatedResources(slaveId, frameworkId, resourcesTakenFromSlave);
+        //LOG(INFO) << "ETTER DECREASE DECREASER";
+        //printAvailableResources(resourcesOfSlave, slave);
+        //LOG(INFO) << "FIKK TRACKET ALLOCATED RESOURCES";
+        if(isRemainingEmpty(remaining)){
+          //LOG(INFO) << "FERDIG MED " << currentCategory; 
+          bundle.put(currentCategory, resourcesFromSlaves);
+          //Legge til i bundles og
+          bundles.put(frameworkId, bundle);
+          done = currentCategory == BundleCategory::Large;
+          resourcesFromSlaves.clear();
+          currentCategory = getNextCategory(currentCategory);
+          if(currentCategory == BundleCategory::Last)
+            break;
+          remaining = getResourcesOfBundle(currentCategory);
+          //resourcesOfSlave = getTotalOfferableResources(slave, slaveId, frameworkId);
+          //resourcesOfSlave.allocate("*");
+          //LOG(INFO) << "HENTER OPPDATERTE RESOURCES";
+          //printAvailableResources(resourcesOfSlave, slave);
+          //Når vi har laget et bundle, fortsetter vi å sjekker i slaven vi er i, om den kan fylle flere kategorier
+          while(checkResourcesForBundle(currentCategory, getTotalOfferableResources(slave, slaveId, frameworkId), getResourcesOfBundle(currentCategory))){
+            
+            resourcesOfSlave = getTotalOfferableResources(slave, slaveId, frameworkId);
+            resourcesOfSlave.allocate("*");
+            LOG(INFO) << "HENTER OPPDATERTE RESOURCES";
+            printAvailableResources(resourcesOfSlave, slave);
+            Resources resourcesTakenFromSlave = takeResourcesFromSlave(resourcesOfSlave, remaining);
+            resourcesFromSlaves.push_back(std::make_pair(slaveId, resourcesTakenFromSlave)); //Resources of slave blir HVOR mye vi skal ta av slaven, enten alt eller kun nødvendig bit. 
+
               
-              //LOG(INFO) << "Slave in datacenter: : " << slave.info.resources(i).datacenter_id().datacenter_id();
+            slave.decreaseAvailable(frameworkId, resourcesTakenFromSlave);           //Ikke toOffer resourcesTakenFromSlave ?
+            //LOG(INFO) << "FIKK DECREASET I SLAVE";
+            //printAvailableResources(resourcesOfSlave, slave);
+            trackAllocatedResources(slaveId, frameworkId, resourcesTakenFromSlave);
 
-              //For the time being, datacenterID 5 is where the master also is running. 
+               if(isRemainingEmpty(remaining)){
+                  //LOG(INFO) << "FERDIG MED " << currentCategory; 
+                  bundle.put(currentCategory, resourcesFromSlaves);
+                  //Legge til i bundles og
+                  bundles.put(frameworkId, bundle);
+                  done = currentCategory == BundleCategory::Large;
+                  if(done){
+                    break;
+                  }
+                  resourcesFromSlaves.clear();
+                  currentCategory = getNextCategory(currentCategory);
+                  if(currentCategory == BundleCategory::Last)
+                    break;
+                  remaining = getResourcesOfBundle(currentCategory);
+                 }
 
-              if(slave.info.resources(i).datacenter_id().datacenter_id().compare("5") == 0){
-                //LOG(INFO) << "Same datacenter as master";
-                slavesWithinDatacenter.push_back(slaveId);
-                break;
-              }else{
-                //LOG(INFO) << "NOT same datacenter as master";
-                slavesInOtherDatacenter.push_back(slaveId);
-                break;
-              }
+          }
+          
         }
-       // LOG(INFO) << "ENNÅ I LOOP";
 
-  }
+        if(done){
+          break;
+        }
 
-  foreach(const SlaveID& slaveId, slavesInOtherDatacenter){
-    slavesWithinDatacenter.push_back(slaveId);
-  }
+        //LOG(INFO) << "CURRENT CATEGORY " << currentCategory;  
+        
 
-  foreach (const SlaveID& slaveId, slavesWithinDatacenter) {
-    //LOG(INFO) << "SLAVEID VI FØRST SENDER FRA: " << slaveId;
-    Slave& slave = *CHECK_NOTNONE(getSlave(slaveId));
+      }
+    //Breake fra datacenteret
+      if(done)
+        break;
+    
+    //Find next closest datacenter update checked list, if all datacenters of clusters is checked, find next closest cluster and repeat.
+      checkedDatacenters.push_back(currentDatacenterId);
 
-    foreach (const string& role, roleSorter->sort()) {
-      // TODO(bmahler): Handle shared volumes, which are always available but
-      // should be excluded here based on `offeredSharedResources`.
-      if (slave.getAvailable().empty()) {
-        break; // Nothing left on this agent.
+      /*if(checkedDatacenters.size() == datacentersInCluster.size()){
+        break;
+      }*/
+
+      int closestDatacenter = findClosestDatacenter(currentDatacenterId, checkedDatacenters);
+
+      if(closestDatacenter == -1){ //No more datacenters to check in the cluster
+      //select new cluster and datacenter from this cluster
+        checkedClusters.push_back(currentClusterId);
+        int closestCluster = findClosestCluster(currentClusterId, checkedClusters); //Får vi -1 her så må vi begynne å mixe og trikse skikkelig :S
+        if(closestCluster == -1){
+          LOG(INFO) << "SJEKKET ALLE CLUSTERS, DETTE GÅR IKKE";
+          break;
+        }
+        currentClusterId = closestCluster;
+        currentDatacenterId = getRandomDatacenterId(currentClusterId);
+        slavesToCheck = datacenterSlaves(currentDatacenterId);
+      }else{
+        currentDatacenterId = closestDatacenter;
+        slavesToCheck = datacenterSlaves(currentDatacenterId);
       }
 
-      const ResourceLimits& quotaLimits = getQuota(role).limits;
-
-      // NOTE: Suppressed frameworks are not included in the sort.
-      Sorter* frameworkSorter = CHECK_NOTNONE(getFrameworkSorter(role));
-
-      foreach (const string& frameworkId_, frameworkSorter->sort()) {
-        // Offer a shared resource only if it has not been offered in this
-        // offer cycle to a framework.
-        Resources available =
-          slave.getAvailable().allocatableTo(role) -
-          offeredSharedResources.get(slaveId).getOrElse(Resources());
-
-        if (available.empty()) {
-          break; // Nothing left for the role.
-        }
-
-        FrameworkID frameworkId;
-        frameworkId.set_value(frameworkId_);
-
-        const Framework& framework = *CHECK_NOTNONE(getFramework(frameworkId));
-
-        // An early `continue` optimization.
-        if (!allocatable(available, role, framework)) {
-          continue;
-        }
-
-        if (!isCapableOfReceivingAgent(framework.capabilities, slave)) {
-          continue;
-        }
-
-        available = stripIncapableResources(available, framework.capabilities);
-
-        // Reservations (including the roles ancestors' reservations),
-        // non-scalar resources and revocable resources are always allocated.
-        Resources toOffer = available.filter([&](const Resource& resource) {
-          return Resources::isReserved(resource) ||
-                 resource.type() != Value::SCALAR ||
-                 Resources::isRevocable(resource);
-        });
-
-        // Then, unreserved scalar resources are subject to quota limits
-        // and global headroom enforcement.
-        //
-        // This is hot path, we use explicit filter calls to avoid
-        // multiple traversal.
-        Resources additionalScalarOffering =
-          available.filter([&](const Resource& resource) {
-            return resource.type() == Value::SCALAR &&
-                   Resources::isUnreserved(resource) &&
-                   !Resources::isRevocable(resource);
-          });
-
-        // Limits enforcement.
-        if (!quotaLimits.empty()) {
-          additionalScalarOffering = shrinkResources(
-              additionalScalarOffering,
-              quotaLimits - CHECK_NOTNONE(rolesConsumedQuota.get(role)));
-        }
-
-        // Headroom enforcement.
-        //
-        // This check is only for performance optimization.
-        if (!requiredHeadroom.empty() && !additionalScalarOffering.empty()) {
-          Resources shrunk = shrinkResources(
-              additionalScalarOffering, availableHeadroom - requiredHeadroom);
-
-          // If resources are held back.
-          if (shrunk != additionalScalarOffering) {
-            heldBackForHeadroom += ResourceQuantities::fromScalarResources(
-                additionalScalarOffering - shrunk);
-            ++heldBackAgentCount;
-
-            additionalScalarOffering = std::move(shrunk);
-          }
-        }
-
-        toOffer += additionalScalarOffering;
-
-        // If the framework filters these resources, ignore.
-        if (!allocatable(toOffer, role, framework) ||
-            isFiltered(framework, role, slave, toOffer)) {
-          continue;
-        }
-
-        LOG(INFO) << "Offering " << toOffer << " on agent " << slaveId
-                << " to role " << role << " of framework " << frameworkId;
-
-        toOffer.allocate(role);
-
-        offerable[frameworkId][role][slaveId] += toOffer;
-        offeredSharedResources[slaveId] += toOffer.shared();
-        Slave& slave = *CHECK_NOTNONE(getSlave(slaveId));
-        for(int i = 0; i < slave.info.resources_size(); i++){
-              //LOG(INFO) << "TEST: " << slave.info.resources(i).datacenter_id().datacenter_id();
-        }
-
-        // Update role consumed quota and quota headroom
-
-        ResourceQuantities increasedQuotaConsumption =
-          ResourceQuantities::fromScalarResources(additionalScalarOffering);
-
-        if (getQuota(role) != DEFAULT_QUOTA) {
-          rolesConsumedQuota[role] += increasedQuotaConsumption;
-          for (const string& ancestor : roles::ancestors(role)) {
-            rolesConsumedQuota[ancestor] += increasedQuotaConsumption;
-          }
-        }
-
-        availableHeadroom -= increasedQuotaConsumption;
-
-        slave.decreaseAvailable(frameworkId, toOffer);
-
-        trackAllocatedResources(slaveId, frameworkId, toOffer);
-      }
+      //LOG(INFO) << "CURRENT CLUSTER ID" << currentClusterId;
+      //LOG(INFO) << "CURRENT DATACENTER ID" << currentDatacenterId;
+    
     }
-  }
 
+  }
+  
   if (logHeadroomInfo) {
     LOG(INFO) << "After allocation, " << requiredHeadroom
               << " are required for quota headroom, "
@@ -2377,16 +3627,65 @@ void DummyAllocatorProcess::__generateOffers()
               << " agents to ensure sufficient quota headroom";
   }
 
-  if (offerable.empty()) {
+  if (bundles.empty()) {
     VLOG(2) << "No allocations performed";
+    //LOG(INFO) << "NO ALLOCATION PERFORMED, BUNDLES VAR EMPTY";
   } else {
     // Now offer the resources to each framework.
-    foreachkey (const FrameworkID& frameworkId, offerable) {
-      offerCallback(frameworkId, offerable.at(frameworkId));
-    }
+
+
+      //Sortere slik at vi sender offers i stigende rekkefølge, small til medium 
+      foreachkey(const FrameworkID& frameworkId, bundles){
+        //Iterere 3 ganger, per bundle
+        foreachkey(const BundleCategory bc, bundles[frameworkId]){
+          BundleCategory current;
+          std::vector<std::pair<SlaveID, Resources>> vec = bundles[frameworkId].get(bc).get();
+
+          hashmap<string, hashmap<SlaveID, Resources>> resources;
+          hashmap<SlaveID, Resources> temp;
+
+          for(std::pair<SlaveID, Resources> tempPair : vec){
+            temp.put(tempPair.first, tempPair.second);
+          }
+          resources.put("*", temp);
+
+          switch(bc){
+            case BundleCategory::Small:
+              LOG(INFO) << "SENDER SMALL BUNDLE";
+              current = BundleCategory::Small;
+              break;
+            case BundleCategory::Medium:
+              LOG(INFO) << "SENDER MEDIUM BUNDLE";
+              current = BundleCategory::Medium;
+              break;
+            case BundleCategory::Large:
+              LOG(INFO) << "SENDER LARGE BUNDLE";
+              current = BundleCategory::Large;
+              break;
+            case BundleCategory::Last:
+              LOG(INFO) << "SENDER LAST???? BUNDLE";
+              break;
+          }
+
+          writeBundlesToFile(current, frameworkId, temp);
+          LOG(INFO) << "OFFERCALL BACK KALT";
+          offerCallback(frameworkId, resources);
+
+        }
+      //offerCallback(frameworkId, offerable[frameworkId]);
+      }
+    
   }
 }
-  
+bool isRemainingEmpty(hashmap<string, int> remaining){
+  foreachkey(string s, remaining){
+    if(remaining.get(s).get() > 0){
+      return false;
+    }
+  }
+
+  return true;
+}
 void DummyAllocatorProcess::generateInverseOffers()
 {
   // In this case, `offerable` is actually the slaves and/or resources that we
@@ -2970,8 +4269,7 @@ bool DummyAllocatorProcess::isFiltered(
 }
 
 
-bool DummyAllocatorProcess::isFiltered(
-    const Framework& framework, const Slave& slave) const
+bool DummyAllocatorProcess::isFiltered(const Framework& framework, const Slave& slave) const
 {
   if (framework.inverseOfferFilters.contains(slave.info.id())) {
     foreach (const shared_ptr<InverseOfferFilter>& inverseOfferFilter,
@@ -3000,19 +4298,19 @@ void DummyAllocatorProcess::untrackAllocatedResources(
   // and later a call to `recoverResources()` occurs to recover
   // the framework's resources.
   CHECK_CONTAINS(frameworks, frameworkId);
-
+  
   // TODO(bmahler): Calling allocations() is expensive since it has
   // to construct a map. Avoid this.
   foreachpair (const string& role,
                const Resources& allocation,
                allocated.allocations()) {
     CHECK_CONTAINS(*roleSorter, role);
-
     Sorter* frameworkSorter = CHECK_NOTNONE(getFrameworkSorter(role));
-
+    
     CHECK_CONTAINS(*frameworkSorter, frameworkId.value())
       << "for role " << role;
 
+    
     roleTree.untrackOfferedOrAllocated(allocation);
 
     frameworkSorter->unallocated(
@@ -3021,6 +4319,7 @@ void DummyAllocatorProcess::untrackAllocatedResources(
     roleSorter->unallocated(role, slaveId, allocation);
   }
 }
+
 
 } // namespace internal {
 } // namespace allocator {

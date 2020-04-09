@@ -55,8 +55,10 @@ using std::vector;
 
 using mesos::Resources;
 
-const int32_t CPUS_PER_TASK = 4;
-const int32_t MEM_PER_TASK = 128;
+const int32_t CPUS_PER_TASK = 1;
+const int32_t MEM_PER_TASK = 500;
+const int32_t TOTAL_TASKS = 3;
+const string datacenterId = "5";
 
 constexpr char EXECUTOR_BINARY[] = "test-executor";
 constexpr char EXECUTOR_NAME[] = "Test Executor (C++)";
@@ -74,14 +76,35 @@ public:
       role(_role),
       tasksLaunched(0),
       tasksFinished(0),
-      totalTasks(5) {}
+      totalTasks(TOTAL_TASKS) {}
 
   ~TestScheduler() override {}
 
-  void registered(SchedulerDriver*,
+  void registered(SchedulerDriver* driver,
                           const FrameworkID&,
                           const MasterInfo&) override
   {
+     /*std::vector<Request> requests;
+    
+
+    Request request;
+    Request* temp = &request;
+    Resource* test = request.add_resources();
+    Resource* test1 = request.add_resources();
+    temp->mutable_datacenter_id()->set_datacenter_id(datacenterId);
+    test->mutable_datacenter_id()->set_datacenter_id(datacenterId);
+    test1->mutable_datacenter_id()->set_datacenter_id(datacenterId);
+    Value_Scalar value;
+    test1->set_type(Value::SCALAR);
+    test1->set_name("mem");
+    test1->mutable_scalar()->set_value(MEM_PER_TASK*TOTAL_TASKS);
+    test->set_type(Value::SCALAR);
+    test->set_name("cpus");
+    test->mutable_scalar()->set_value(CPUS_PER_TASK*TOTAL_TASKS);
+    requests.push_back(request);
+
+    driver->requestResources(requests);
+    */
     cout << "Registered!" << endl;
   }
 
@@ -137,12 +160,15 @@ public:
         tasks.push_back(task);
       }
 
+      cout << "LAUNCHER ANTALL TASKS " << tasks.size();
       driver->launchTasks(offer.id(), tasks);
     }
   }
 
   void offerRescinded(SchedulerDriver* driver, const OfferID& offerId) override
-  {}
+  {
+    cout << "Offeret ble tatt tilbake" << offerId;
+  }
 
   void statusUpdate(SchedulerDriver* driver, const TaskStatus& status) override
   {

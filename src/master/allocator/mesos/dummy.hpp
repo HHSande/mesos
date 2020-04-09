@@ -31,6 +31,8 @@
 #include "master/allocator/mesos/sorter/random/sorter.hpp"
 
 #include "master/constants.hpp"
+#include <iostream>
+#include <fstream>
 
 namespace mesos {
 namespace internal {
@@ -49,6 +51,7 @@ DummyRandomAllocatorProcess;
 typedef MesosAllocator<DummyRandomAllocatorProcess>
 DummyAllocator;
 
+typedef std::tuple<SlaveID, Resources> binPackItems;
 
 
 
@@ -91,6 +94,12 @@ namespace internal {
   hashmap<std::string, std::vector<ResourceQuantities>> minAllocatableResources;
 };
 
+enum BundleCategory {
+  Small = 0, 
+  Medium, 
+  Large, 
+  Last
+};
 
 class Role
 {
@@ -279,6 +288,8 @@ public:
 
   const Resources& getAvailable() const { return available; }
 
+  const hashmap<int, std::vector<SlaveID>> mapSlavesToDatacenters();
+
   bool hasGpu() const { return hasGpu_; }
 
   void updateTotal(const Resources& newTotal) {
@@ -322,7 +333,7 @@ public:
   // whitelisting and in log messages, and `domain` for region-aware
   // scheduling.
   SlaveInfo info;
-
+  DatacenterID datacenter_id;
   protobuf::slave::Capabilities capabilities;
 
   bool activated; // Whether to offer resources.
@@ -456,6 +467,16 @@ public:
                const hashmap<SlaveID, UnavailableResources>&)>&
         inverseOfferCallback) override;
 
+  hashmap<SlaveID, Slave> datacenterSlaves(int datacenterid);
+  hashmap<SlaveID, Resources> getValues(int datacenterID);
+  void writeBundlesToFile(BundleCategory current, FrameworkID frameworkId, hashmap<SlaveID, Resources> resources);
+
+  bool enoughResourcesInDatacenter(Request request, int datacenterID, Framework framework, const FrameworkID& frameworkId);
+  bool enoughResourcesInAnyDatacenterInSameCluster(Request request, int datacenterID, Framework framework, FrameworkID frameworkId);
+  int getClosestCluster(int datacenter_id, std::vector<int> checked);
+  Resources getTotalOfferableResources(Slave slave, SlaveID slaveId, FrameworkID frameworkId);
+
+
   void recover(
       const int _expectedAgentCount,
       const hashmap<std::string, Quota>& quotas) override;
@@ -568,6 +589,7 @@ public:
 
   void resume() override;
 
+//extern hashmap<int, std::vector<int> > cluster;
 protected:
   // Useful typedefs for dispatch/delay/defer to self()/this.
   typedef DummyAllocatorProcess Self;
@@ -634,7 +656,7 @@ protected:
   bool initialized;
   bool paused;
   
-  hashmap<int, std::vector<int> > cluster;
+  hashmap<int, std::vector<SlaveID> > slavesInDatacenters;
 
   mesos::allocator::Options options;
    // Recovery data.
@@ -678,6 +700,9 @@ protected:
     completedFrameworkMetrics;
 
   hashmap<SlaveID, Slave> slaves;
+
+  ResourceQuantities totalScalarQuantities;
+
 
   RoleTree roleTree;
 

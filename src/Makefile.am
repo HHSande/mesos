@@ -1127,6 +1127,8 @@ libmesos_no_3rdparty_la_SOURCES +=					\
   #master/allocator/mesos/hierarchical.hpp				\
   master/allocator/mesos/dummy.cpp				\
   master/allocator/mesos/dummy.hpp				\
+  	master/allocator/mesos/affinity_propagation.hpp \
+	master/allocator/mesos/affinity_propagation.cpp \
   master/allocator/mesos/metrics.cpp					\
   master/allocator/mesos/metrics.hpp					\
   master/allocator/mesos/sorter/drf/metrics.cpp				\

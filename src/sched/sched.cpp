@@ -765,6 +765,7 @@ protected:
       stopwatch.start();
     }
 
+    LOG(INFO) << "SENDTE MED DRIVER TIL SCHEDUELER?";
     scheduler->registered(driver, frameworkId, masterInfo);
 
     VLOG(1) << "Scheduler::registered took " << stopwatch.elapsed();

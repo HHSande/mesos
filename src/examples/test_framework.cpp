@@ -56,8 +56,8 @@ using std::vector;
 using mesos::Resources;
 
 const int32_t CPUS_PER_TASK = 1;
-const int32_t MEM_PER_TASK = 500;
-const int32_t TOTAL_TASKS = 3;
+const int32_t MEM_PER_TASK = 1000;
+const int32_t TOTAL_TASKS = 8;
 const string datacenterId = "5";
 
 constexpr char EXECUTOR_BINARY[] = "test-executor";
@@ -160,7 +160,7 @@ public:
         tasks.push_back(task);
       }
 
-      cout << "LAUNCHER ANTALL TASKS " << tasks.size();
+      cout << "LAUNCHER ANTALL TASKS " << tasks.size() << endl;
       driver->launchTasks(offer.id(), tasks);
     }
   }

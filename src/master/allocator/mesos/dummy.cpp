@@ -91,8 +91,8 @@ int findClosestCluster(int currentClusterId, std::vector<int> checked);
 int findClosestDatacenter(int currentDatacenterId, std::vector<int> checked);
 bool isRemainingEmpty(hashmap<string, int> remaining);
 
-double cpuTresh = 10.0;
-double ramTresh = 10.0;
+double cpuTresh = 50.0;
+double ramTresh = 50.0;
 class OfferFilter
 {
 public:
@@ -1251,22 +1251,22 @@ hashmap<string, int> getResourcesOfBundle(BundleCategory category){    //Kanskje
         //ram.mutable_scalar()->set_value(500);
         //cpu.mutable_scalar()->set_value(1);
 
-        tempHm.put("mem", 500);
+        tempHm.put("mem", 1000);
         tempHm.put("cpus", 1);
         break;
       case BundleCategory::Medium:
         //ram.mutable_scalar()->set_value(1000);
         //cpu.mutable_scalar()->set_value(2);
 
-        tempHm.put("mem", 1000);
+        tempHm.put("mem", 2000);
         tempHm.put("cpus", 2);
         break;
       case BundleCategory::Large:
         //ram.mutable_scalar()->set_value(1500);
         //cpu.mutable_scalar()->set_value(3);
 
-        tempHm.put("mem", 1500);
-        tempHm.put("cpus", 3);
+        tempHm.put("mem", 4000);
+        tempHm.put("cpus", 4);
         break;
       case BundleCategory::Last:
         LOG(INFO) << "SKAL IKKE KOMME HIT";
@@ -1298,6 +1298,7 @@ bool checkResourcesForBundle(BundleCategory category, Resources toOffer, hashmap
   * 2. Sjekke om den fyller treshholds?
   * 3. Sjekke om det er nok til å fylle resten av remaining?
   */
+
 
   double cpusToOffer = getSpecificResourceType(toOffer, "cpus");
   int remainingCpus = remaining.get("cpus").get();
@@ -1612,7 +1613,7 @@ std::vector<int> getDatacentersInCluster(int datacenterId){
 
 int getExemplar(int datacenterID){
   foreachpair(const int& exemplar, const vector<int>& datacenterIds, cluster){
-    LOG(INFO) << "EXEMPLAR: "  << exemplar;
+    //LOG(INFO) << "EXEMPLAR: "  << exemplar;
     if(std::find(datacenterIds.begin(), datacenterIds.end(), datacenterID) != datacenterIds.end()){
         return exemplar;
     }
@@ -2773,9 +2774,9 @@ Resources takeResourcesFromSlave(Resources& toOffer, hashmap<string, int>& remai
     Resource ram;
     Resource cpu;
     
+
     std::vector<Resource> temp;
     hashmap<string, double> remainingCalc;
-    //std::vector<Resource> remainingCalc;
 
     ram.set_type(Value::SCALAR);
     ram.set_name("mem");
@@ -2786,20 +2787,8 @@ Resources takeResourcesFromSlave(Resources& toOffer, hashmap<string, int>& remai
     
     
     
-    //Resources resources();
 
     foreach(Resource r, toOffer){
-      /*if(r.name().compare("mem") == 0){
-        LOG(INFO) << "FANT MEM";
-        resources.mutable_scalar()->CopyFrom(remaining.get("mem").get());
-        LOG(INFO) << "MEM " << r.scalar();
-      }else if(r.name().compare("cpus") == 0){
-        LOG(INFO) << "FANT CPUS";
-        resources.mutable_scalar()->CopyFrom(remaining.get("cpus").get());
-        LOG(INFO) << "CPUS " << r.scalar(); 
-      }else{
-        resources
-      }*/
       if(r.name().compare("mem") == 0){
         remainingCalc.put(r.name(), r.scalar().value());
       }
@@ -2958,7 +2947,7 @@ int findClosestDatacenter(int currentDatacenterId, std::vector<int> checked){
     double temp = getDatacenterDistance(currentDatacenterId, x);
     //LOG(INFO) << "DATACENTER DISTANCE " << temp;
     if(currBest.second != 0.0){
-      if(currBest.second > temp)
+      if(currBest.second < temp)
         currBest = std::make_pair(x, temp);
     }else{
       currBest = std::make_pair(x, temp);
@@ -2987,7 +2976,7 @@ BundleCategory checkPreviousBundles(BundleCategory currentCategory, Resources re
 }
 
 void printAvailableResources(Resources r, Slave slave){
-  LOG(INFO) << "CURRENT RESOURCES";
+  LOG(INFO) << "CURRENT RESOURCES DATACENTER " << slave.info.datacenter_id().datacenter_id();
   foreach(const Resource& res, r){
     LOG(INFO) << res.name() << " " << res.scalar() << " id: " << slave.info.id(); 
   }
@@ -3009,418 +2998,6 @@ void DummyAllocatorProcess::__generateOffers()
   vector<SlaveID> slaveIds;
   //slaveIds.reserve(allocationCandidates.size());
   hashmap<FrameworkID, hashmap<BundleCategory, std::vector<std::pair<SlaveID, Resources>>>> bundles;
-
-  // Filter out non-whitelisted, removed, and deactivated slaves
-  // in order not to send offers for them.
-  foreachkey (const SlaveID& slaveId, slaves) {
-    Option<Slave*> slave = getSlave(slaveId);
-
-    if (isWhitelisted(slaveId) && slave.isSome() && (*slave)->activated) {
-      slaveIds.push_back(slaveId);
-    }
-  }
-
-  // Randomize the order in which slaves' resources are allocated.
-  //
-  // TODO(vinod): Implement a smarter sorting algorithm.
-  std::random_shuffle(slaveIds.begin(), slaveIds.end());
-
-  // To enforce quota, we keep track of consumed quota for roles with a
-  // non-default quota.
-  //
-  // NOTE: We build the map here to avoid repetitive aggregation in the
-  // allocation loop. But this map will still need to be updated in the
-  // allocation loop as we make new allocations.
-  //
-  // TODO(mzhu): Build and persist this information across allocation cycles in
-  // track/untrackAllocatedResources().
-  //
-  // TODO(mzhu): Ideally, we want the sorter to track consumed quota. It then
-  // could use consumed quota instead of allocated resources (the former
-  // includes unallocated reservations while the latter does not) to calculate
-  // the DRF share. This would help to:
-  //
-  //   (1) Solve the fairness issue when roles with unallocated
-  //       reservations may game the allocator (See MESOS-8299).
-  //
-  //   (2) Simplify the quota enforcement logic -- the allocator
-  //       would no longer need to track reservations separately.
-  hashmap<string, ResourceQuantities> rolesConsumedQuota;
-
-  // We only log headroom info if there is any non-default quota set.
-  // We set this flag value as we iterate through all roles below.
-  //
-  // TODO(mzhu): remove this once we can determine if there is any non-default
-  // quota set by looking into the allocator memory state in constant time.
-  bool logHeadroomInfo = false;
-
-  // We charge a role against its quota by considering its allocation
-  // (including all subrole allocations) as well as any unallocated
-  // reservations (including all subrole reservations) since reservations
-  // are bound to the role. In other words, we always consider reservations
-  // as consuming quota, regardless of whether they are allocated.
-  // It is calculated as:
-  //
-  //   Consumed Quota = reservations + unreserved allocation
-
-  // Add reservations and unreserved offeredOrAllocated.
-  //
-  // Currently, only top level roles can have quota set and thus
-  // we only track consumed quota for top level roles.
-  foreach (const Role* r, roleTree.root()->children()) {
-    // TODO(mzhu): Track all role consumed quota. We may want to expose
-    // these as metrics.
-    if (r->quota() != DEFAULT_QUOTA) {
-      logHeadroomInfo = true;
-      rolesConsumedQuota[r->role] +=
-        r->reservationScalarQuantities() +
-        ResourceQuantities::fromScalarResources(
-            r->offeredOrAllocatedScalars().unreserved().nonRevocable());
-    }
-  }
-
-  // We need to constantly make sure that we are holding back enough
-  // unreserved resources that the remaining quota guarantee can later
-  // be satisfied when needed:
-  //
-  //   Required unreserved headroom =
-  //     sum (guarantee - consumed quota) for each role.
-  //
-  // Given the above, if a role has more reservations (which count towards
-  // consumed quota) than quota guarantee, we don't need to hold back any
-  // unreserved headroom for it.
-  ResourceQuantities requiredHeadroom;
-  foreach (const Role* r, roleTree.root()->children()) {
-    requiredHeadroom +=
-      r->quota().guarantees -
-      rolesConsumedQuota.get(r->role).getOrElse(ResourceQuantities());
-  }
-
-  // We will allocate resources while ensuring that the required
-  // unreserved non-revocable headroom is still available. Otherwise,
-  // we will not be able to satisfy the quota guarantee later.
-  //
-  //   available headroom = unallocated unreserved non-revocable resources
-  //
-  // We compute this as:
-  //
-  //   available headroom = total resources -
-  //                        allocated resources -
-  //                        unallocated reservations -
-  //                        unallocated revocable resources
-  ResourceQuantities availableHeadroom = totalScalarQuantities;
-
-  // NOTE: The role sorter does not return aggregated allocation
-  // information whereas `reservationScalarQuantities` does, so
-  // we need to loop over only top level roles for the latter.
-
-  // Subtract allocated resources from the total.
-  availableHeadroom -= roleSorter->allocationScalarQuantities();
-
-  // Subtract total unallocated reservations.
-  // unallocated reservations = total reservations - allocated reservations
-  availableHeadroom -=
-    roleTree.root()->reservationScalarQuantities() -
-    ResourceQuantities::fromScalarResources(
-        roleTree.root()->offeredOrAllocatedScalars().reserved());
-
-  // Subtract revocable resources.
-  foreachvalue (const Slave& slave, slaves) {
-    availableHeadroom -= ResourceQuantities::fromScalarResources(
-        slave.getAvailable().revocable().scalars());
-  }
-
-  if (logHeadroomInfo) {
-    LOG(INFO) << "Before allocation, required quota headroom is "
-              << requiredHeadroom
-              << " and available quota headroom is " << availableHeadroom;
-  }
-
-  // Due to the two stages in the allocation algorithm and the nature of
-  // shared resources being re-offerable even if already allocated, the
-  // same shared resources can appear in two (and not more due to the
-  // `allocatable` check in each stage) distinct offers in one allocation
-  // cycle. This is undesirable since the allocator API contract should
-  // not depend on its implementation details. For now we make sure a
-  // shared resource is only allocated once in one offer cycle. We use
-  // `offeredSharedResources` to keep track of shared resources already
-  // allocated in the current cycle.
-  hashmap<SlaveID, Resources> offeredSharedResources;
-
-  // In the 1st stage, we allocate to roles with non-default quota guarantees.
-  //
-  // NOTE: Even though we keep track of the available headroom, we still
-  // dedicate the first stage for roles with non-default quota guarantees.
-  // The reason is that quota guarantees headroom only acts as a quantity
-  // guarantee. Frameworks might have filters or capabilities such that the
-  // resources set aside for the headroom cannot be used by these frameworks,
-  // resulting in unsatisfied guarantees (despite enough headroom set aside).
-  // Thus we try to satisfy the quota guarantees in this first stage so that
-  // those roles with unsatisfied guarantees can have more choices and higher
-  // probability in getting their guarantees satisfied.
-  foreach (const SlaveID& slaveId, slaveIds) {
-    Slave& slave = *CHECK_NOTNONE(getSlave(slaveId));
-    //LOG(INFO) << "1ST STAGE";
-    foreach (const string& role, roleSorter->sort()) {
-      const Quota& quota = getQuota(role);
-
-      const ResourceQuantities& quotaGuarantees = quota.guarantees;
-      const ResourceLimits& quotaLimits = quota.limits;
-
-      // We only allocate to roles with non-default guarantees
-      // in the first stage.
-      if (quotaGuarantees.empty()) {
-        continue;
-      }
-
-      // If there are no active frameworks in this role, we do not
-      // need to do any allocations for this role.
-      bool noFrameworks = [&]() {
-        Option<const Role*> r = roleTree.get(role);
-
-        return r.isNone() || (*r)->frameworks().empty();
-      }();
-
-      if (noFrameworks) {
-        continue;
-      }
-
-      // TODO(bmahler): Handle shared volumes, which are always available but
-      // should be excluded here based on `offeredSharedResources`.
-      if (slave.getAvailable().empty()) {
-        break; // Nothing left on this agent.
-      }
-
-      ResourceQuantities unsatisfiedQuotaGuarantees =
-        quotaGuarantees -
-        rolesConsumedQuota.get(role).getOrElse(ResourceQuantities());
-
-      // We only allocate to roles with unsatisfied guarantees
-      // in the first stage.
-      if (unsatisfiedQuotaGuarantees.empty()) {
-        continue;
-      }
-
-      // Fetch frameworks in the order provided by the sorter.
-      // NOTE: Suppressed frameworks are not included in the sort.
-      Sorter* frameworkSorter = CHECK_NOTNONE(getFrameworkSorter(role));
-      LOG(INFO) << "FANT FRAMEWORK SORTER I STAGE 1 FOR " << role;
-
-      foreach (const string& frameworkId_, frameworkSorter->sort()) {
-        if (unsatisfiedQuotaGuarantees.empty()) {
-          break;
-        }
-
-        // Offer a shared resource only if it has not been offered in this
-        // offer cycle to a framework.
-        Resources available =
-          slave.getAvailable().allocatableTo(role) -
-          offeredSharedResources.get(slaveId).getOrElse(Resources());
-
-        if (available.empty()) {
-          break; // Nothing left for the role.
-        }
-
-        FrameworkID frameworkId;
-        frameworkId.set_value(frameworkId_);
-
-        const Framework& framework = *CHECK_NOTNONE(getFramework(frameworkId));
-        CHECK(framework.active) << frameworkId;
-        
-        // An early `continue` optimization.
-        if (!allocatable(available, role, framework)) {
-          continue;
-        }
-
-        if (!isCapableOfReceivingAgent(framework.capabilities, slave)) {
-          continue;
-        }
-
-        available = stripIncapableResources(available, framework.capabilities);
-
-        // In this first stage, we allocate the role's reservations as well as
-        // any unreserved resources while enforcing the role's quota limits and
-        // the global headroom. We'll "chop" the unreserved resources if needed.
-        //
-        // E.g. A role has no allocations or reservations yet and a 10 cpu
-        //      quota limits. We'll chop a 15 cpu agent down to only
-        //      allocate 10 cpus to the role to keep it within its limits.
-        //
-        // Note on bursting above guarantees up to the limits in the 1st stage:
-        //
-        // In this 1st stage, for resources that the role has non-default
-        // guarantees, we allow the role to burst above this guarantee up to
-        // its limit (while maintaining the global headroom). In addition,
-        // if the role is allocated any resources that help it to make
-        // progress towards its quota guarantees, or the role is being
-        // allocated some reservation(s), we will also allocate all of the
-        // resources (subject to its limits and global headroom) for which it
-        // does not have any guarantees for.
-        //
-        // E.g. The agent has 1 cpu, 1024 mem, 1024 disk, 1 gpu, 5 ports
-        //      and the role has guarantees for 1 cpu, 512 mem and no limits.
-        //      We'll include all the disk, gpu, and ports in the allocation,
-        //      despite the role not having any quota guarantee for them. In
-        //      addition, we will also allocate all the 1024 mem to the role.
-        //
-        // Rationale of allocating all non-guaranteed resources on the agent
-        // (subject to role limits and global headroom requirements):
-        //
-        // Currently, it is not possible to set quota on non-scalar resources,
-        // like ports. A user may also only choose to set guarantees on some
-        // scalar resources (e.g. on cpu but not on memory). If we do not
-        // allocate these resources together with the guarantees, frameworks
-        // will get non-usable offers (e.g. with no ports or memory).
-        // However, the downside of this approach is that, after one allocation,
-        // the agent will be deprived of some resources (e.g. no ports),
-        // rendering any subsequent offers non-usable. Users are advised to
-        // leverage the `min_allocatbale_resources` to help prevent such offers
-        // and reduce resource fragmentation.
-        //
-        // Rationale of allowing roles to burst scalar resource allocations up
-        // to its limits (subject to headroom requirements) in this first stage:
-        //
-        // Allowing roles to burst in this first stage would help to reduce
-        // fragmentation--guaranteed resources and non-guarantee bursting
-        // resources are combined into one offer from one agent. However,
-        // the downside is that, such premature bursting will may prevent
-        // subsequent roles from getting guarantees, especially if their
-        // frameworks are picky. This is true despite the enforced headroom
-        // which only enforces quantity. Nevertheless, We choose to allow
-        // such bursting for less resource fragmentation.
-
-        // Resources that can be used to to increase a role's quota consumption.
-        //
-        // This is hot path, we use explicit filter calls to avoid
-        // multiple traversal.
-        Resources quotaResources =
-          available.filter([&](const Resource& resource) {
-            return resource.type() == Value::SCALAR &&
-                   Resources::isUnreserved(resource) &&
-                   !Resources::isRevocable(resource);
-          });
-
-        Resources guaranteesOffering =
-          shrinkResources(quotaResources, unsatisfiedQuotaGuarantees);
-
-        // We allocate this agent only if the role can make progress towards
-        // its quota guarantees i.e. it is getting some unreserved resources
-        // for its guarantees . Otherwise, this role is not going to get any
-        // allocation. We can safely continue here.
-        //
-        // NOTE: For roles with unallocated reservations on this agent, if
-        // its guarantees are already satisfied or this agent has no resources
-        // that can contribute to its guarantees (except the reservation), we
-        // will also skip it here. Its reservations will be allocated in the
-        // second stage.
-        //
-        // NOTE: Since we currently only support top-level roles to
-        // have quota, there are no ancestor reservations involved here.
-        if (guaranteesOffering.empty()) {
-          continue;
-        }
-
-        // This role's reservations, non-scalar resources and revocable
-        // resources, as well as guarantees are always allocated.
-        //
-        // We need to allocate guarantees unconditionally here so that
-        // even the cluster is overcommitted by guarantees (thus deficit in
-        // headroom), this role's guarantees can still be allocated.
-        Resources toOffer = guaranteesOffering +
-                               available.filter([&](const Resource& resource) {
-                                 return Resources::isReserved(resource, role) ||
-                                        resource.type() != Value::SCALAR ||
-                                        Resources::isRevocable(resource);
-                               });
-
-        Resources additionalScalarOffering =
-          quotaResources - guaranteesOffering;
-
-        // Then, non-guaranteed quota resources are subject to quota limits
-        // and global headroom enforcements.
-
-        // Limits enforcement.
-        if (!quotaLimits.empty()) {
-          additionalScalarOffering = shrinkResources(
-              additionalScalarOffering,
-              quotaLimits - CHECK_NOTNONE(rolesConsumedQuota.get(role)) -
-                ResourceQuantities::fromScalarResources(guaranteesOffering));
-        }
-
-        // Headroom enforcement.
-        //
-        // This check is only for performance optimization.
-        if (!requiredHeadroom.empty() && !additionalScalarOffering.empty()) {
-          // Shrink down to surplus headroom.
-          //
-          // Surplus headroom = (availableHeadroom - guaranteesOffering) -
-          //                      (requiredHeadroom - guaranteesOffering)
-          //                  = availableHeadroom - requiredHeadroom
-          additionalScalarOffering = shrinkResources(
-              additionalScalarOffering, availableHeadroom - requiredHeadroom);
-        }
-
-        toOffer += additionalScalarOffering;
-
-        // If the framework filters these resources, ignore.
-        if (!allocatable(toOffer, role, framework) ||
-            isFiltered(framework, role, slave, toOffer)) {
-          continue;
-        }
-
-        VLOG(2) << "Offering " << toOffer << " on agent " << slaveId
-                << " to role " << role << " of framework " << frameworkId
-                << " as part of its role quota";
-
-        toOffer.allocate(role);
-        //int clusterID = getExemplar(boost::lexical_cast<int>(slave.info.datacenter_id().datacenter_id()));
-        //offerable[clusterID][frameworkId][role][slaveId] += toOffer;
-        offeredSharedResources[slaveId] += toOffer.shared();
-
-        // Update role consumed quota and quota headroom.
-
-        ResourceQuantities increasedQuotaConsumption =
-          ResourceQuantities::fromScalarResources(
-              guaranteesOffering + additionalScalarOffering);
-
-        unsatisfiedQuotaGuarantees -= increasedQuotaConsumption;
-        rolesConsumedQuota[role] += increasedQuotaConsumption;
-        for (const string& ancestor : roles::ancestors(role)) {
-          rolesConsumedQuota[ancestor] += increasedQuotaConsumption;
-        }
-
-        requiredHeadroom -=
-          ResourceQuantities::fromScalarResources(guaranteesOffering);
-        availableHeadroom -= increasedQuotaConsumption;
-        foreach(const Resource& res, toOffer){
-            LOG(INFO) << "FØRSTE TOOFFER, SKAL VÆRE MINDRE" << res.name() << " " << res.scalar() << " id: " << slave.info.id(); 
-          }
-
-        slave.decreaseAvailable(frameworkId, toOffer);
-
-        trackAllocatedResources(slaveId, frameworkId, toOffer);
-      }
-    }
-  }
-
-  // Similar to the first stage, we will allocate resources while ensuring
-  // that the required unreserved non-revocable headroom is still available
-  // for unsatisfied quota guarantees. Otherwise, we will not be able to
-  // satisfy quota guarantees later. Reservations and revocable resources
-  // will always be included in the offers since allocating these does not
-  // make progress towards satisifying quota guarantees.
-  //
-  // For logging purposes, we track the number of agents that had resources
-  // held back for quota headroom, as well as how many resources in total
-  // were held back.
-  //
-  // While we also held resources back for quota headroom in the first stage,
-  // we do not track it there. This is because in the second stage, we try to
-  // allocate all resources (including the ones held back in the first stage).
-  // Thus only resources held back in the second stage are truly held back for
-  // the whole allocation cycle.
-  ResourceQuantities heldBackForHeadroom;
-  size_t heldBackAgentCount = 0;
 
   // We randomize the agents here to "spread out" the effect of the first
   // stage, which tends to allocate from the front of the agent list more
@@ -3463,7 +3040,7 @@ void DummyAllocatorProcess::__generateOffers()
     std::vector<int> datacentersInCluster = cluster.get(currentClusterId).get();
     int currentDatacenterId = getRandomDatacenterId(currentClusterId);
     //LOG(INFO) << "CURRENT CLUSTER ID" << currentClusterId;
-    //LOG(INFO) << "CURRENT DATACENTER ID" << currentDatacenterId;
+    LOG(INFO) << "FIRST DATACENTER ID" << currentDatacenterId;
   
     hashmap<SlaveID, Slave> slavesToCheck = datacenterSlaves(currentDatacenterId);
   
@@ -3512,34 +3089,21 @@ void DummyAllocatorProcess::__generateOffers()
         LOG(INFO) << "FØRSTE RESOURCE CHECK FOR SLAVEN";
         printAvailableResources(resourcesOfSlave, slave);
         Resources resourcesTakenFromSlave = takeResourcesFromSlave(resourcesOfSlave, remaining);
-        //LOG(INFO) << "ETTER VI TAR RESOURCES FRA SLAVE";
-        //printAvailableResources(resourcesOfSlave, slave);
         resourcesFromSlaves.push_back(std::make_pair(slaveId, resourcesTakenFromSlave)); //Resources of slave blir HVOR mye vi skal ta av slaven, enten alt eller kun nødvendig bit. 
 
-        //LOG(INFO) << "RESOURCES TAKEN FROM SLAVE";
-        //printAvailableResources(resourcesTakenFromSlave, slave);
         slave.decreaseAvailable(frameworkId, resourcesTakenFromSlave);           //Ikke toOffer resourcesTakenFromSlave ?
-        //LOG(INFO) << "FIKK DECREASET I SLAVE";
         trackAllocatedResources(slaveId, frameworkId, resourcesTakenFromSlave);
-        //LOG(INFO) << "ETTER DECREASE DECREASER";
-        //printAvailableResources(resourcesOfSlave, slave);
-        //LOG(INFO) << "FIKK TRACKET ALLOCATED RESOURCES";
         if(isRemainingEmpty(remaining)){
-          //LOG(INFO) << "FERDIG MED " << currentCategory; 
-          bundle.put(currentCategory, resourcesFromSlaves);
+          bundle[currentCategory] =  resourcesFromSlaves;
           //Legge til i bundles og
-          bundles.put(frameworkId, bundle);
+          bundles[frameworkId] = bundle;
           done = currentCategory == BundleCategory::Large;
           resourcesFromSlaves.clear();
           currentCategory = getNextCategory(currentCategory);
           if(currentCategory == BundleCategory::Last)
             break;
           remaining = getResourcesOfBundle(currentCategory);
-          //resourcesOfSlave = getTotalOfferableResources(slave, slaveId, frameworkId);
-          //resourcesOfSlave.allocate("*");
-          //LOG(INFO) << "HENTER OPPDATERTE RESOURCES";
-          //printAvailableResources(resourcesOfSlave, slave);
-          //Når vi har laget et bundle, fortsetter vi å sjekker i slaven vi er i, om den kan fylle flere kategorier
+
           while(checkResourcesForBundle(currentCategory, getTotalOfferableResources(slave, slaveId, frameworkId), getResourcesOfBundle(currentCategory))){
             
             resourcesOfSlave = getTotalOfferableResources(slave, slaveId, frameworkId);
@@ -3551,15 +3115,12 @@ void DummyAllocatorProcess::__generateOffers()
 
               
             slave.decreaseAvailable(frameworkId, resourcesTakenFromSlave);           //Ikke toOffer resourcesTakenFromSlave ?
-            //LOG(INFO) << "FIKK DECREASET I SLAVE";
-            //printAvailableResources(resourcesOfSlave, slave);
             trackAllocatedResources(slaveId, frameworkId, resourcesTakenFromSlave);
 
                if(isRemainingEmpty(remaining)){
-                  //LOG(INFO) << "FERDIG MED " << currentCategory; 
-                  bundle.put(currentCategory, resourcesFromSlaves);
+                  bundle[currentCategory] = resourcesFromSlaves;
                   //Legge til i bundles og
-                  bundles.put(frameworkId, bundle);
+                  bundles[frameworkId] =  bundle;
                   done = currentCategory == BundleCategory::Large;
                   if(done){
                     break;
@@ -3604,6 +3165,13 @@ void DummyAllocatorProcess::__generateOffers()
           LOG(INFO) << "SJEKKET ALLE CLUSTERS, DETTE GÅR IKKE";
           break;
         }
+        /*
+        foreachpair(SlaveID tempSlaveId, Resources res, resourcesFromSlaves){
+            Slave& tempSlave = *CHECK_NOTNONE(getSlave(tempSlaveId));
+            tempSlave.increaseAvailable(frameworkId, res);
+            untrackAllocatedResources(tempSlaveId, frameworkId, res);
+          }
+        */
         currentClusterId = closestCluster;
         currentDatacenterId = getRandomDatacenterId(currentClusterId);
         slavesToCheck = datacenterSlaves(currentDatacenterId);
@@ -3613,19 +3181,12 @@ void DummyAllocatorProcess::__generateOffers()
       }
 
       //LOG(INFO) << "CURRENT CLUSTER ID" << currentClusterId;
-      //LOG(INFO) << "CURRENT DATACENTER ID" << currentDatacenterId;
+      LOG(INFO) << "NEW DATACENTER ID" << currentDatacenterId;
     
     }
 
   }
   
-  if (logHeadroomInfo) {
-    LOG(INFO) << "After allocation, " << requiredHeadroom
-              << " are required for quota headroom, "
-              << heldBackForHeadroom << " were held back from "
-              << heldBackAgentCount
-              << " agents to ensure sufficient quota headroom";
-  }
 
   if (bundles.empty()) {
     VLOG(2) << "No allocations performed";
